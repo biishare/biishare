@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🔒 NECESSÁRIO PARA POSITION: STICKY FUNCIONAR */
+html,
+body,
+#__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #161616;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #ffffff;
+    --foreground: #161616;
+  }
+}
+
+.text-stroke {
+  -webkit-text-stroke: 0.5px white;
+}
+
+body {
+  color: var(--foreground);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+}
+
+
+.customize-vdeo::placeholder{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.multipleellipsis{
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+.oval-container{
+  /* width: calc(100% + 400px); */
+  height: calc(100% + 400px);
+}
+
+.play-list-lesson::-webkit-scrollbar{
+  width: 5px;
+}
+
+.scroll-bar-x::-webkit-scrollbar{
+  display: none;
+}
+
+.play-list-lesson::-webkit-scrollbar-track{
+  /* box-shadow: inset 0 0 5px grey; */
+  border-radius: 10px;
+}
+
+.play-list-lesson::-webkit-scrollbar-thumb{
+  background-color: #d2d2d2;
+  border-radius: 10px;
+  opacity: 0;
+}
+
+
+
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+.btn::before,
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: #21dda9;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1;
+}
+.btn::before {
+  left: 0;
+  transform-origin: left;
+}
+.btn::after {
+  right: 0;
+  transform-origin: right;
+}
+.btn:hover::before {
+  transform: translateX(-100%);
+}
+.btn:hover::after {
+  transform: translateX(100%);
+}
+.btn-content {
+  position: relative;
+  z-index: 2;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.textsize {
+  font-size: calc(1.545rem + 1.54vw);
+}
