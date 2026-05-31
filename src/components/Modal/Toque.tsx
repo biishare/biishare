@@ -108,39 +108,32 @@ export default function ReelModal({
 
   const router = useRouter()
 
-
-
   const controls = useAnimation()
 
+  const [direction, setDirection] =
+    useState(0)
 
-
-  const index =
-
+  const currentIndex =
     selectedIndex ?? 0
 
+  const safeIndex =
+    items.length > 0
+      ? Math.min(
+        Math.max(currentIndex, 0),
+        items.length - 1
+      )
+      : 0
 
-
-  const item = items[index]
-
-
+  const item = items[safeIndex]
 
   const isFirst =
-
-    index <= 0
-
-
+    safeIndex <= 0
 
   const isLast =
-
-    index >=
-
+    safeIndex >=
     items.length - 1
 
 
-
-  const [direction, setDirection] =
-
-    useState(0)
 
 
 
@@ -156,97 +149,51 @@ export default function ReelModal({
 
 
   const next = () => {
-
     if (isLast) return
-
-
 
     setDirection(1)
 
-
-
     const nextIndex =
-
-      index + 1
-
-
+      safeIndex + 1
 
     if (useRouterNav) {
-
       const nextItem =
-
         items[nextIndex]
-
-
 
       if (!nextItem) return
 
-
-
       router.replace(
-
         `/toque/${nextItem._id}`
-
       )
-
     } else {
-
       onChangeIndex?.(
-
         nextIndex
-
       )
-
     }
-
   }
 
-
-
   const prev = () => {
-
     if (isFirst) return
-
-
 
     setDirection(-1)
 
-
-
     const prevIndex =
-
-      index - 1
-
-
+      safeIndex - 1
 
     if (useRouterNav) {
-
       const prevItem =
-
         items[prevIndex]
-
-
 
       if (!prevItem) return
 
-
-
       router.replace(
-
         `/toque/${prevItem._id}`
-
       )
-
     } else {
-
       onChangeIndex?.(
-
         prevIndex
-
       )
-
     }
-
   }
 
 
@@ -390,75 +337,38 @@ export default function ReelModal({
 
 
   useEffect(() => {
-
     const handler = (
-
       e: KeyboardEvent
-
     ) => {
-
       switch (e.key) {
-
         case 'ArrowDown':
-
-          if (!isLast)
-
-            next()
-
+          next()
           break
-
-
 
         case 'ArrowUp':
-
-          if (!isFirst)
-
-            prev()
-
+          prev()
           break
-
-
 
         case 'Escape':
-
           handleClose()
-
           break
-
       }
-
     }
 
-
-
     window.addEventListener(
-
       'keydown',
-
       handler
-
     )
 
-
-
     return () =>
-
       window.removeEventListener(
-
         'keydown',
-
         handler
-
       )
-
   }, [
-
-    index,
-
+    safeIndex,
     isFirst,
-
     isLast,
-
   ])
 
 
@@ -500,49 +410,45 @@ export default function ReelModal({
 
 
   useEffect(() => {
-
     controls.set({
-
       y: 0,
-
       opacity: 1,
-
       scale: 1,
-
     })
-
   }, [
-
-    item._id,
-
+    item?._id,
     controls,
-
   ])
 
-
+  useEffect(() => {
+    controls.start({
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.25,
+      },
+    })
+  }, [
+    item?._id,
+    controls,
+  ])
 
   useEffect(() => {
+    if (!open) return
 
-    controls.start({
+    document.body.style.overflow =
+      'hidden'
 
-      opacity: 1,
+    return () => {
+      document.body.style.overflow =
+        ''
+    }
+  }, [open])
 
-      scale: 1,
-
-      y: 0,
-
-      transition: {
-
-        duration: 0.25,
-
-      },
-
-    })
-
-  }, [item._id])
-
-
-  if (!item) return null
+  if (!items?.length || !item) {
+    return null
+  }
 
 
   return (
