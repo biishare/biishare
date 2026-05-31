@@ -1,3 +1,5 @@
+// seo/toqueMetadata.ts
+
 import { Metadata } from 'next'
 
 import { getToqueById } from '../../../services/short.service'
@@ -7,38 +9,27 @@ import { createMetadata } from '@/MetaData/baseMetadata'
 
 const DEFAULT_OG_IMAGE = '/placeholder.jpg'
 
-interface ToquePageProps {
-  params: {
-    idToque: string
-  }
-}
-
-export async function generateMetadata({
-  params,
-}: ToquePageProps): Promise<Metadata> {
-
-  const { idToque } = params
-
+export async function getToqueMetadata(
+  id: string,
+): Promise<Metadata> {
   let toque: Toque | null = null
 
   try {
-    toque = await getToqueById(idToque)
+    toque = await getToqueById(id)
   } catch {
     toque = null
   }
 
-  // TOQUE NÃO ENCONTRADO
   if (!toque) {
     return createMetadata({
       title: 'Toque não encontrado | Biishare',
       description:
         'O Toque solicitado não foi encontrado ou não está disponível.',
-      path: `/toques/${idToque}`,
+      path: `/toques/${id}`,
       type: 'article',
     })
   }
 
-  // 🔥 imagem correta baseada no teu type
   const ogImage =
     toque.mediaType === 'image'
       ? toque.imageUrl
@@ -49,12 +40,11 @@ export async function generateMetadata({
     toque.title ||
     'Leia este Toque na Biishare'
 
-  // TOQUE ENCONTRADO
   return createMetadata({
     title: `${toque.title} | Biishare`,
     description,
     image: ogImage,
-    path: `/toques/${idToque}`,
+    path: `/toques/${id}`,
     type: 'article',
   })
 }

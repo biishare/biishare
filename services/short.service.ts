@@ -28,6 +28,6 @@ export async function getShorts(params?: GetShortsParams) {
 }
 
 export async function getToqueById(id: string): Promise<Toque> {
-  const response = await api.get(`/toque/${id}`)
+  const response = await api.get(`/toques/${id}`)
   return response.data
 }

@@ -1,12 +1,9 @@
-'use client'
-
-import { useQuery } from '@tanstack/react-query'
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { ToquesCard } from '@/components/Toque/Toques'
-import { getShorts } from '../../../../services/short.service'
-
-
+import { getToqueById } from '../../../../services/short.service'
+import ToqueClient from './ToqueClient'
+import { getToqueMetadata } from '@/MetaData/pages/toque'
 
 interface Props {
   params: {
@@ -14,42 +11,18 @@ interface Props {
   }
 }
 
-export default function ToquePage({
+export async function generateMetadata({
   params,
-}: Props) {
+}: Props): Promise<Metadata> {
+  return getToqueMetadata(params.id)
+}
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['shorts'],
-    queryFn: () =>
-      getShorts({
-        page: 1,
-        limit: 50,
-      }),
-  })
+export default async function Page({ params }: Props) {
+  const toque = await getToqueById(params.id)
 
-  const item = data?.data?.find(
-    (short: any) =>
-      short._id === params.id
-  )
-
-  if (isLoading) {
-    return null
-  }
-
-  if (!item) {
+  if (!toque) {
     notFound()
   }
 
-  return (
-    <ToquesCard
-      item={item}
-      pageToque
-      sx={{
-        minHeight: '100vh',
-        maxWidth: 520,
-        mx: 'auto',
-        background: '#000',
-      }}
-    />
-  )
+  return <ToqueClient item={toque} />
 }
