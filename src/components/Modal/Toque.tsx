@@ -48,6 +48,8 @@ import {
 
 import {
 
+  useCallback,
+
   useEffect,
 
   useState,
@@ -148,7 +150,7 @@ export default function ReelModal({
 
 
 
-  const next = () => {
+  const next = useCallback(() => {
     if (isLast) return
 
     setDirection(1)
@@ -170,9 +172,16 @@ export default function ReelModal({
         nextIndex
       )
     }
-  }
+  }, [
+    isLast,
+    items,
+    onChangeIndex,
+    router,
+    safeIndex,
+    useRouterNav,
+  ])
 
-  const prev = () => {
+  const prev = useCallback(() => {
     if (isFirst) return
 
     setDirection(-1)
@@ -194,7 +203,14 @@ export default function ReelModal({
         prevIndex
       )
     }
-  }
+  }, [
+    isFirst,
+    items,
+    onChangeIndex,
+    router,
+    safeIndex,
+    useRouterNav,
+  ])
 
 
 
@@ -206,7 +222,7 @@ export default function ReelModal({
 
 
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
 
     onClose()
 
@@ -218,7 +234,11 @@ export default function ReelModal({
 
     }
 
-  }
+  }, [
+    onClose,
+    router,
+    useRouterNav,
+  ])
 
 
 
@@ -366,9 +386,9 @@ export default function ReelModal({
         handler
       )
   }, [
-    safeIndex,
-    isFirst,
-    isLast,
+    handleClose,
+    next,
+    prev,
   ])
 
 
@@ -706,6 +726,10 @@ export default function ReelModal({
                 item={item}
 
                 pageToque
+
+                active
+
+                preload="auto"
 
                 sx={{
 

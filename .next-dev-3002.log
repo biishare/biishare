@@ -1,0 +1,41 @@
+
+> biillearn@0.1.0 dev
+> next dev -p 3002
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3002
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 8.1s
+ ○ Compiling /login ...
+ ✓ Compiled /login in 27.6s (2145 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 11.3s (2134 modules)
+ GET /login 404 in 40774ms
+ GET /login 404 in 73ms
+ ✓ Compiled in 1604ms (888 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1611ms (1257 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 5.1s (2354 modules)
+ GET /login 500 in 7619ms
+ ✓ Compiled in 838ms (1071 modules)
+ GET /login 200 in 2342ms
+ ✓ Compiled in 609ms (1071 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1184ms (2357 modules)
+ GET /_next/static/webpack/f6747f5c5b20449c.webpack.hot-update.json 404 in 1408ms
+ GET /login 200 in 514ms
+ ✓ Compiled in 593ms (1073 modules)
+ ✓ Compiled in 998ms (1073 modules)
+ ✓ Compiled in 823ms (1073 modules)
+ ✓ Compiled in 4s (2368 modules)
+ GET /login 500 in 3010ms
+ ✓ Compiled in 941ms (2368 modules)
+ GET /login 500 in 605ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4s (2361 modules)
+ GET /_next/static/webpack/c1015832b7fb5828.webpack.hot-update.json 404 in 3881ms
+ GET /login 200 in 643ms
+ ✓ Compiled in 734ms (1075 modules)

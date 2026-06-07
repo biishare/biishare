@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   Box,
   ThemeProvider,
@@ -69,11 +69,16 @@ export default function ContentList() {
   })
 
   // 🔄 junta todas páginas
-  const posts: PostDTO[] =
-    data?.pages.flatMap((page) => page.data) ?? []
+  const posts: PostDTO[] = useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data],
+  )
 
   // 📌 feed calculado
-  const feed: FeedBlock[] = buildFeed(posts, subjectId)
+  const feed: FeedBlock[] = useMemo(
+    () => buildFeed(posts, subjectId),
+    [posts, subjectId],
+  )
 
   // ➕ carregar mais
   const handleLoadMore = () => {
@@ -96,7 +101,9 @@ export default function ContentList() {
         }}
       >
         {/* skeleton inicial */}
-        {isLoading && <ContentCardSkeleton count={8} />}
+        {isLoading && posts.length === 0 && (
+          <ContentCardSkeleton count={8} />
+        )}
 
         {/* feed */}
         {feed.map((block, index) => {

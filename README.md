@@ -1,116 +1,125 @@
-# 🚀 Biishare
+# Biishare
 
-**Biishare** é uma plataforma que une entretenimento e aprendizado em uma experiência moderna, dinâmica e envolvente.
+**Biishare** e uma plataforma que une entretenimento e aprendizagem numa experiencia moderna, dinamica e envolvente.
 
-Aqui, o conhecimento ganha vida através de vídeos, imagens, documentos e conteúdos interactivos — tornando o estudo mais leve, acessível e interessante para estudantes e curiosos que querem aprender de forma diferente.
+O objetivo e tornar o estudo mais leve e acessivel atraves de videos, documentos, imagens e conteudos organizados por disciplina, nivel e ano.
 
----
+## Funcionalidades
 
-## ✨ Funcionalidades
+- Conteudos organizados por disciplinas, niveis e anos
+- Suporte a videos educativos
+- Documentos e materiais de apoio
+- Conteudos visuais e interativos
+- Filtros para navegacao rapida
+- Interface moderna e responsiva
+- Listagem com carregamento progressivo
 
-* 📚 Conteúdos organizados por disciplinas e níveis
-* 🎥 Suporte a vídeos educativos
-* 📄 Documentos e materiais de apoio
-* 🖼️ Conteúdos visuais interativos
-* 🔎 Filtros inteligentes para navegação rápida
-* ⚡ Interface moderna e fluida
-* 📱 Design totalmente responsivo
+## Tecnologias
 
----
+- Next.js
+- React
+- TypeScript
+- Material UI
+- Tailwind CSS
+- TanStack React Query
+- Axios
 
-## 🛠️ Tecnologias
+## Requisitos
 
-* Next.js
-* React
-* TypeScript
-* Material UI
-* Framer Motion
-* Axios
+- Node.js 18 ou superior
+- npm
+- API externa configurada e acessivel
 
----
+## Variaveis de ambiente
 
-## 🔐 Variáveis de Ambiente
+Crie um ficheiro `.env.local` na raiz do projeto:
 
-Este projecto depende de uma API externa.
-Crie um arquivo `.env.local` na raiz do projeto:
-
-```bash id="1y6zt6"
-NEXT_PUBLIC_API_URL=http://localhost:4000
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
 ```
 
-### 📌 Descrição
+Variavel disponivel:
 
-* `NEXT_PUBLIC_API_URL` → URL base da API utilizada pela aplicação
+- `NEXT_PUBLIC_API_BASE_URL`: URL base da API utilizada pela aplicacao
+- `NEXT_PUBLIC_GOOGLE_AUTH_URL` (opcional): URL completa do endpoint OAuth Google. Se nao for definida, a aplicacao usa `NEXT_PUBLIC_API_BASE_URL/auth/google`.
 
-> ⚠️ Nunca suba o arquivo `.env.local` para o repositório.
+Nunca envie ficheiros `.env.local` ou `.env` com credenciais reais para o repositorio.
 
----
+## Instalacao
 
-## ⚙️ Instalação e execução
-
-```bash id="n3svhq"
-# Clone o repositório
-git clone https://github.com/seu-usuario/biishare.git
-
-# Acesse a pasta do projeto
+```bash
+git clone https://github.com/biishare/biishare.git
 cd biishare
-
-# Instale as dependências
 npm install
-
-# Configure o ambiente
 cp .env.example .env.local
-
-# Execute o projeto
 npm run dev
 ```
 
-Acesse no navegador:
-👉 http://localhost:3000
+Depois, acesse:
 
----
-
-## 📁 Estrutura do projeto
-
-```bash
-src/
- ├── app/                # Rotas e páginas (Next.js App Router)
- ├── components/         # Componentes reutilizáveis (UI)
- ├── services/           # Comunicação com APIs
- │    ├── api.ts         # Configuração do Axios
- │    └── endpoints/     # Funções por domínio (posts, users, etc)
- ├── hooks/              # Hooks personalizados
- ├── utils/              # Funções auxiliares
- ├── constants/          # Constantes globais
- ├── types/              # Tipagens TypeScript
- ├── styles/             # Estilos e temas
- └── lib/                # Configurações externas
-
-public/
- └── images/             # Imagens estáticas da aplicação
-
-.env.example             # Exemplo de variáveis de ambiente
+```txt
+http://localhost:3000
 ```
 
+## Scripts
 
+```bash
+npm run dev
+```
 
----
+Inicia o servidor de desenvolvimento.
 
-## 🌐 Deploy
+```bash
+npm run build
+```
 
-Para produção, configure corretamente as variáveis de ambiente na plataforma de deploy (ex: Vercel).
+Gera a versao de producao.
 
----
+```bash
+npm run start
+```
 
+Inicia a aplicacao em modo de producao depois do build.
 
----
+```bash
+npm run lint
+```
 
-## 📄 Licença
+Executa a validacao de lint do projeto.
 
-Este projeto está sob a licença MIT.
+## Estrutura do projeto
 
----
+```txt
+src/
+  app/             Rotas e paginas do Next.js App Router
+  components/      Componentes reutilizaveis da interface
+  MetaData/        Metadados das paginas
+  fonts/           Configuracao de fontes
 
-## 💡 Visão
+services/          Comunicacao com a API externa
+hooks/             Hooks personalizados
+utils/             Funcoes auxiliares
+constants/         Constantes e mapas de labels
+types/             Tipagens TypeScript
+lib/               Configuracoes compartilhadas
+public/            Assets publicos da aplicacao
+```
 
-A Biishare tem como objectivo transformar o acesso ao conhecimento, tornando-o mais acessível, interativo e alinhado com a forma como as novas gerações consomem conteúdo.
+## Deploy
+
+Para producao, configure `NEXT_PUBLIC_API_BASE_URL` na plataforma de deploy, como Vercel, Netlify ou outro provedor compativel com Next.js.
+
+Antes de publicar, execute:
+
+```bash
+npm run lint
+npm run build
+```
+
+## Licenca
+
+Este projeto esta sob a licenca MIT.
+
+## Visao
+
+A Biishare procura transformar o acesso ao conhecimento, tornando-o mais simples, interativo e alinhado com a forma como os estudantes consomem conteudo hoje.

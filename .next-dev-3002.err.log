@@ -1,0 +1,125 @@
+Warning: Reverting webpack devtool to 'eval-source-map'.
+Changing the webpack devtool in development mode will cause severe performance regressions.
+Read more: https://nextjs.org/docs/messages/improper-devtool
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+digest: "3698837803"
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (./src/components/Auth/LoginForm.tsx:9:68)
+    at (ssr)/./src/components/Auth/LoginForm.tsx (E:\Marques\biishare\.next\server\app\login\page.js:217:1)
+    at Object.__webpack_require__ [as require] (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+digest: "690492615"
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+digest: "3446777635"
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+digest: "3446777635"
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+digest: "3446777635"
+TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-metadata-image-loader.js?type=favicon&segment=&basePath=&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js!./src/app/favicon.ico?__next_metadata__:5:99)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-metadata-image-loader.js?type=favicon&segment=&basePath=&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js!./src/app/favicon.ico?__next_metadata__ (E:\Marques\biishare\.next\server\app\login\page.js:408:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async tree.children.metadata.icon (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Flogin%2Fpage&page=%2Flogin%2Fpage&appPaths=%2Flogin%2Fpage&pagePath=private-next-app-dir%2Flogin%2Fpage.tsx&appDir=E%3A%5CMarques%5Cbiishare%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=E%3A%5CMarques%5Cbiishare&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:53:31)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399708
+    at async Promise.all (index 0)
+    at async tg (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399776)
+    at async Promise.all (index 0)
+    at async tv (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399893)
+    at async tb (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400246)
+    at async tS (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400773)
+    at async tR (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2130)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2722 {
+  digest: '3446777635'
+}
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-metadata-image-loader.js?type=favicon&segment=&basePath=&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js!./src/app/favicon.ico?__next_metadata__:5:99)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-metadata-image-loader.js?type=favicon&segment=&basePath=&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js!./src/app/favicon.ico?__next_metadata__ (E:\Marques\biishare\.next\server\app\login\page.js:408:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async tree.children.metadata.icon (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Flogin%2Fpage&page=%2Flogin%2Fpage&appPaths=%2Flogin%2Fpage&pagePath=private-next-app-dir%2Flogin%2Fpage.tsx&appDir=E%3A%5CMarques%5Cbiishare%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=E%3A%5CMarques%5Cbiishare&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:53:31)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399708
+    at async Promise.all (index 0)
+    at async tg (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399776)
+    at async Promise.all (index 0)
+    at async tv (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:399893)
+    at async tb (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400246)
+    at async tS (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400773)
+    at async tR (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2130)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2722 {
+  digest: '3446777635',
+  page: '/login'
+}
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (155:27) @ GoogleIcon
+ ⨯ ReferenceError: GoogleIcon is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:241:120)
+digest: "4173029929"
+[0m [90m 153 |[39m               size[33m=[39m[32m"large"[39m[0m
+[0m [90m 154 |[39m               fullWidth[0m
+[0m[31m[1m>[22m[39m[90m 155 |[39m               startIcon[33m=[39m{[33m<[39m[33mGoogleIcon[39m [33m/[39m[33m>[39m}[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 156 |[39m               sx[33m=[39m{{[0m
+[0m [90m 157 |[39m                 height[33m:[39m [35m48[39m[33m,[39m[0m
+[0m [90m 158 |[39m                 borderRadius[33m:[39m [35m2[39m[33m,[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (155:27) @ IconGoogle
+ ⨯ ReferenceError: IconGoogle is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:241:120)
+digest: "1414434345"
+[0m [90m 153 |[39m               size[33m=[39m[32m"large"[39m[0m
+[0m [90m 154 |[39m               fullWidth[0m
+[0m[31m[1m>[22m[39m[90m 155 |[39m               startIcon[33m=[39m{[33m<[39m[33mIconGoogle[39m [33m/[39m[33m>[39m}[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 156 |[39m               sx[33m=[39m{{[0m
+[0m [90m 157 |[39m                 height[33m:[39m [35m48[39m[33m,[39m[0m
+[0m [90m 158 |[39m                 borderRadius[33m:[39m [35m2[39m[33m,[39m[0m
+ ⨯ src\components\Auth\LoginForm.tsx (155:27) @ IconGoogle
+ ⨯ ReferenceError: IconGoogle is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:241:120)
+digest: "1414434345"
+[0m [90m 153 |[39m               size[33m=[39m[32m"large"[39m[0m
+[0m [90m 154 |[39m               fullWidth[0m
+[0m[31m[1m>[22m[39m[90m 155 |[39m               startIcon[33m=[39m{[33m<[39m[33mIconGoogle[39m [33m/[39m[33m>[39m}[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 156 |[39m               sx[33m=[39m{{[0m
+[0m [90m 157 |[39m                 height[33m:[39m [35m48[39m[33m,[39m[0m
+[0m [90m 158 |[39m                 borderRadius[33m:[39m [35m2[39m[33m,[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:39:24871
+    at E:\Marques\biishare\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at E:\Marques\biishare\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\Marques\biishare\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\Marques\biishare\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NextTracerImpl.trace (E:\Marques\biishare\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at E:\Marques\biishare\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at r2 (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:41:1673)
+    at async doRender (E:\Marques\biishare\node_modules\next\dist\server\base-server.js:1438:30)
+    at async cacheEntry.responseCache.get.routeKind (E:\Marques\biishare\node_modules\next\dist\server\base-server.js:1599:28)

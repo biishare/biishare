@@ -94,9 +94,6 @@ export default function AdHeroEngine() {
 
     return {
       ...baseConfig,
-
-      /* mobile mais clean */
-      showForeground: !isMobile,
     };
   }, [ad, isMobile]);
 
@@ -162,8 +159,8 @@ export default function AdHeroEngine() {
           width: "100%",
 
           height: {
-            xs: 260,
-            sm: 320,
+            xs: 500,
+            sm: 520,
             md: 400,
             lg: 440,
           },
@@ -242,8 +239,8 @@ export default function AdHeroEngine() {
         width: "100%",
 
         height: {
-          xs: 260,
-          sm: 320,
+          xs: 500,
+          sm: 520,
           md: 400,
           lg: 440,
         },
@@ -325,14 +322,25 @@ export default function AdHeroEngine() {
           position: "absolute",
           inset: 0,
 
-          background: `
-            linear-gradient(
-              to top,
-              rgba(2,6,23,.92),
-              rgba(2,6,23,.25),
-              rgba(2,6,23,.7)
-            )
-          `,
+          background: {
+            xs: `
+              linear-gradient(
+                to bottom,
+                rgba(2,6,23,.72),
+                rgba(2,6,23,.18) 34%,
+                rgba(2,6,23,.92) 74%,
+                rgba(2,6,23,.98)
+              )
+            `,
+            md: `
+              linear-gradient(
+                to top,
+                rgba(2,6,23,.92),
+                rgba(2,6,23,.25),
+                rgba(2,6,23,.7)
+              )
+            `,
+          },
         }}
       />
 
@@ -396,6 +404,189 @@ export default function AdHeroEngine() {
       </Box>
 
       {/* ======================================================
+       * MOBILE AD LAYOUT
+       * ====================================================== */}
+
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+
+          zIndex: 14,
+
+          display: {
+            xs: "flex",
+            md: "none",
+          },
+
+          flexDirection: "column",
+
+          px: 2,
+          pt: 7.2,
+          pb: 2,
+        }}
+      >
+        <Fade
+          key={`${ad._id}-mobile`}
+          in
+          timeout={450}
+        >
+          <Box
+            sx={{
+              position: "relative",
+
+              flex: "1 1 auto",
+              minHeight: 0,
+
+              width: "100%",
+
+              overflow: "hidden",
+
+              borderRadius: 3,
+
+              background:
+                "rgba(2,6,23,.62)",
+
+              border:
+                "1px solid rgba(255,255,255,.12)",
+
+              boxShadow:
+                "0 14px 38px rgba(0,0,0,.42)",
+            }}
+          >
+            {ad.mediaType === "image" ? (
+              <Image
+                src={mediaUrl}
+                alt={ad.title || "ad"}
+                fill
+                sizes="100vw"
+                style={{
+                  objectFit: "contain",
+                  objectPosition:
+                    ad.focalPoint ??
+                    "center",
+                }}
+              />
+            ) : (
+              <Video
+                src={mediaUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                style={{
+                  width: "100%",
+                  height: "100%",
+
+                  objectFit: "contain",
+                  objectPosition:
+                    ad.focalPoint ??
+                    "center",
+                }}
+              />
+            )}
+          </Box>
+        </Fade>
+
+        {hasContent && (
+          <Box
+            sx={{
+              flex: "0 0 auto",
+
+              mt: 1.4,
+              p: 1.6,
+
+              borderRadius: 3,
+
+              background:
+                "rgba(15,23,42,.72)",
+
+              backdropFilter: "blur(16px)",
+
+              border:
+                "1px solid rgba(255,255,255,.1)",
+            }}
+          >
+            {hasTitle && (
+              <Typography
+                sx={{
+                  fontWeight: 900,
+
+                  lineHeight: 1.08,
+
+                  fontSize: 20,
+
+                  color: "white",
+
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {ad.title}
+              </Typography>
+            )}
+
+            {hasSubtitle && (
+              <Typography
+                sx={{
+                  mt: hasTitle ? 0.8 : 0,
+
+                  color:
+                    "rgba(255,255,255,.78)",
+
+                  lineHeight: 1.45,
+
+                  fontSize: 12.5,
+
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {ad.subtitle}
+              </Typography>
+            )}
+
+            {hasCTA && (
+              <Button
+                onClick={handleClickCTA}
+                sx={{
+                  mt:
+                    hasTitle ||
+                    hasSubtitle
+                      ? 1.2
+                      : 0,
+
+                  px: 2,
+                  py: 0.85,
+
+                  borderRadius: 999,
+
+                  textTransform: "none",
+
+                  fontWeight: 800,
+
+                  color: "white",
+
+                  background:
+                    "linear-gradient(135deg,#f59e0b,#fb923c)",
+
+                  boxShadow:
+                    "0 10px 25px rgba(245,158,11,.35)",
+                }}
+              >
+                {ad.cta}
+              </Button>
+            )}
+          </Box>
+        )}
+      </Box>
+
+      {/* ======================================================
        * FOREGROUND
        * ====================================================== */}
 
@@ -405,11 +596,32 @@ export default function AdHeroEngine() {
             position: "absolute",
             inset: 0,
 
-            display: "flex",
-            alignItems: "center",
+            display: {
+              xs: "none",
+              md: "flex",
+            },
+            alignItems: {
+              xs: "flex-start",
+              md: "center",
+            },
             justifyContent: "center",
 
-            px: 3,
+            px: {
+              xs: 2,
+              md: 3,
+            },
+
+            pt: {
+              xs: 58,
+              sm: 64,
+              md: 0,
+            },
+
+            pb: {
+              xs: 132,
+              sm: 146,
+              md: 0,
+            },
           }}
         >
           <Fade
@@ -422,18 +634,36 @@ export default function AdHeroEngine() {
                 position: "relative",
 
                 width: "100%",
-                maxWidth: 720,
+                maxWidth: {
+                  xs: 360,
+                  sm: 440,
+                  md: 720,
+                },
 
-                height: "76%",
+                height: {
+                  xs: "100%",
+                  md: "76%",
+                },
 
                 overflow: "hidden",
 
-                borderRadius: 5,
+                borderRadius: {
+                  xs: 3,
+                  md: 5,
+                },
 
-                transform: "scale(.96)",
+                transform: {
+                  xs: "none",
+                  md: "scale(.96)",
+                },
+
+                background: "rgba(2,6,23,.5)",
 
                 boxShadow:
-                  "0 20px 70px rgba(0,0,0,.45)",
+                  {
+                    xs: "0 14px 36px rgba(0,0,0,.38)",
+                    md: "0 20px 70px rgba(0,0,0,.45)",
+                  },
 
                 border:
                   "1px solid rgba(255,255,255,.08)",
@@ -488,13 +718,18 @@ export default function AdHeroEngine() {
           sx={{
             position: "absolute",
 
+            display: {
+              xs: "none",
+              md: "block",
+            },
+
             left: {
               xs: 18,
               md: 28,
             },
 
             bottom: {
-              xs: 18,
+              xs: 16,
               md: 28,
             },
 
@@ -514,14 +749,20 @@ export default function AdHeroEngine() {
           <Box
             sx={{
               p: {
-                xs: 2,
+                xs: 1.6,
                 md: 2.4,
               },
 
-              borderRadius: 5,
+              borderRadius: {
+                xs: 3,
+                md: 5,
+              },
 
               background:
-                "rgba(15,23,42,.42)",
+                {
+                  xs: "rgba(15,23,42,.58)",
+                  md: "rgba(15,23,42,.42)",
+                },
 
               backdropFilter: "blur(16px)",
 
@@ -541,7 +782,7 @@ export default function AdHeroEngine() {
                   letterSpacing: "-0.03em",
 
                   fontSize: {
-                    xs: 24,
+                    xs: 20,
                     sm: 30,
                     md: 36,
                   },
@@ -566,7 +807,7 @@ export default function AdHeroEngine() {
                   lineHeight: 1.55,
 
                   fontSize: {
-                    xs: 13,
+                    xs: 12.5,
                     md: 15,
                   },
                 }}
@@ -584,11 +825,20 @@ export default function AdHeroEngine() {
                   mt:
                     hasTitle ||
                     hasSubtitle
-                      ? 2.2
+                      ? {
+                        xs: 1.4,
+                        md: 2.2,
+                      }
                       : 0,
 
-                  px: 2.5,
-                  py: 1,
+                  px: {
+                    xs: 2,
+                    md: 2.5,
+                  },
+                  py: {
+                    xs: 0.85,
+                    md: 1,
+                  },
 
                   borderRadius: 999,
 
@@ -719,11 +969,28 @@ export default function AdHeroEngine() {
           sx={{
             position: "absolute",
 
-            left: "50%",
-            bottom: 16,
+            left: {
+              xs: "auto",
+              md: "50%",
+            },
+            right: {
+              xs: 16,
+              md: "auto",
+            },
+            top: {
+              xs: 21,
+              md: "auto",
+            },
+            bottom: {
+              xs: "auto",
+              md: 16,
+            },
 
             transform:
-              "translateX(-50%)",
+              {
+                xs: "none",
+                md: "translateX(-50%)",
+              },
 
             display: "flex",
             alignItems: "center",

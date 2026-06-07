@@ -1,30 +1,26 @@
 'use client'
 
-
-import Link from 'next/link'
-import { Box, Button, Typography } from '@mui/material'
-import { Zap } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { getShorts } from '../../../services/short.service'
-import { Toque } from '../../../types/Toque'
 import Image from 'next/image'
-
+import Link from 'next/link'
+import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
+import { UserCircle, Zap } from 'lucide-react'
 
 export default function Header() {
-  const { data } = useQuery<{ data: Toque[] }>({
-    queryKey: ['first-toque'],
-    queryFn: () => getShorts({ limit: 1 }),
-    staleTime: 1000 * 60 * 10,
-  })
-
-  const firstToque = data?.data?.[0]
-
   return (
-    <header className="top-0 z-40 w-full border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center px-6 justify-between">
-        {/* LOGO */}
-        {/* LOGO */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <Link
+          href="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            minWidth: 0,
+            flexShrink: 1,
+            textDecoration: 'none',
+          }}
+          aria-label="Ir para a pagina inicial"
+        >
           <Image
             src="/logo.svg"
             alt="Biishare"
@@ -34,78 +30,118 @@ export default function Header() {
             style={{
               width: 'auto',
               height: '32px',
+              flexShrink: 0,
             }}
           />
 
-          {/* barra vertical */}
           <Box
             sx={{
               width: '1px',
               height: '24px',
               backgroundColor: '#e5e7eb',
+              flexShrink: 0,
             }}
           />
 
-          {/* nome com gradient */}
           <Typography
             fontWeight={900}
             sx={{
               background: 'linear-gradient(90deg,#FF7A00,#ff9f45)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              letterSpacing: '-1px',
-              fontSize: '18px',
+              fontSize: { xs: '16px', sm: '18px' },
               lineHeight: 1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
             Biishare
           </Typography>
         </Link>
 
-        {/* BOTÃO TOQUES */}
-        <Box>
-          <Link
-            href={`/toque`}
-            style={{ textDecoration: 'none' }}
-          >
+        <StackActions>
+          <Tooltip title="Perfil">
+            <Link href="/profile" style={{ textDecoration: 'none' }}>
+              <IconButton
+                aria-label="Abrir perfil"
+                sx={{
+                  width: 42,
+                  height: 42,
+                  border: '1px solid #e2e8f0',
+                  color: '#f97316',
+                  backgroundColor: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#fff7ed',
+                    borderColor: '#fed7aa',
+                  },
+                }}
+              >
+                <UserCircle size={22} />
+              </IconButton>
+            </Link>
+          </Tooltip>
+
+          <Link href="/toque" style={{ textDecoration: 'none' }}>
             <Button
               startIcon={<Zap size={18} />}
               sx={{
                 textTransform: 'none',
                 fontWeight: 700,
-                px: 2.2,
-                py: 1,
+                minWidth: { xs: 44, sm: 158 },
+                height: 42,
+                px: { xs: 1.3, sm: 2.2 },
                 borderRadius: '999px',
-
+                whiteSpace: 'nowrap',
                 color: '#fff',
-
-                background:
-                  'linear-gradient(135deg,#f59e0b,#fb923c)',
-
-                boxShadow:
-                  '0 8px 20px rgba(245,158,11,.25)',
-
+                background: 'linear-gradient(135deg,#f59e0b,#fb923c)',
+                boxShadow: '0 8px 20px rgba(245,158,11,.25)',
                 transition: 'all .25s ease',
 
                 '&:hover': {
                   transform: 'translateY(-2px)',
-                  boxShadow:
-                    '0 12px 28px rgba(245,158,11,.35)',
-                  background:
-                    'linear-gradient(135deg,#d97706,#f97316)',
+                  boxShadow: '0 12px 28px rgba(245,158,11,.35)',
+                  background: 'linear-gradient(135deg,#d97706,#f97316)',
                 },
 
                 '&:active': {
                   transform: 'scale(.97)',
                 },
+
+                '& .MuiButton-startIcon': {
+                  mr: { xs: 0, sm: 1 },
+                  ml: 0,
+                },
               }}
             >
-              Explorar Toques
+              <Box
+                component="span"
+                sx={{
+                  display: { xs: 'none', sm: 'inline' },
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Explorar Toques
+              </Box>
             </Button>
           </Link>
-        </Box>
+        </StackActions>
       </div>
     </header>
   )
 }
 
+function StackActions({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: { xs: 0.8, sm: 1 },
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </Box>
+  )
+}

@@ -1,8 +1,10 @@
 import './globals.css'
 import { Providers } from './providers'
 import Script from 'next/script'
+import { Suspense } from 'react'
 import { GA_ID } from '../../lib/analytics'
 import AnalyticsTracker from '@/components/AnalyticsTracker/AnalyticsTracker'
+import ScrollRestoration from '@/components/ScrollRestoration/ScrollRestoration'
 import { createMetadata } from '@/MetaData/baseMetadata'
 
 interface Props {
@@ -22,6 +24,9 @@ export default function RootLayout({
     <html lang="pt">
       <body>
         <Providers>
+          <Suspense fallback={null}>
+            <ScrollRestoration />
+          </Suspense>
           {children}
         </Providers>
 

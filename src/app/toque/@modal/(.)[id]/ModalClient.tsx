@@ -23,14 +23,15 @@ export default function ModalPage({
   })
 
   const shorts = data?.data || []
+  const selectedIndex = shorts.findIndex(
+    x => x._id === params.id,
+  )
 
   return (
     <ReelModal
       open
       items={shorts}
-      selectedIndex={shorts.findIndex(
-        x => x._id === params.id
-      )}
+      selectedIndex={selectedIndex >= 0 ? selectedIndex : 0}
       useRouterNav
       onClose={() => {}}
     />
