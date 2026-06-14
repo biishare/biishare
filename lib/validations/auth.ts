@@ -8,6 +8,17 @@ export const registerSchema = z
       .min(3, 'Nome deve ter pelo menos 3 caracteres')
       .max(100, 'Nome demasiado longo'),
 
+    username: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(3, 'Username deve ter pelo menos 3 caracteres')
+      .max(30, 'Username deve ter no maximo 30 caracteres')
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        'Use letras, numeros e hifens entre palavras'
+      ),
+
     email: z
       .string()
       .email('Email invalido')

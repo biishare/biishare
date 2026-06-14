@@ -39,3 +39,28 @@
  GET /_next/static/webpack/c1015832b7fb5828.webpack.hot-update.json 404 in 3881ms
  GET /login 200 in 643ms
  ✓ Compiled in 734ms (1075 modules)
+ GET /_next/static/webpack/839a8c054bfcf8d2.webpack.hot-update.json 500 in 4651ms
+ GET /login 200 in 125ms
+ ✓ Compiled in 625ms (1075 modules)
+ ✓ Compiled in 1810ms (1075 modules)
+ ✓ Compiled in 2s (2372 modules)
+ ✓ Compiled in 8.3s (2372 modules)
+ ✓ Compiled in 611ms (1073 modules)
+ ✓ Compiled in 2.1s (2372 modules)
+ GET /login 500 in 2592ms
+ ✓ Compiled in 1811ms (1073 modules)
+ ✓ Compiled in 536ms (1073 modules)
+ GET /login 500 in 245ms
+ ✓ Compiled in 657ms (1073 modules)
+ ✓ Compiled in 676ms (1073 modules)
+ GET /login 500 in 291ms
+ ✓ Compiled in 757ms (1073 modules)
+ GET /login 500 in 184ms
+ ✓ Compiled in 427ms (1073 modules)
+ GET /login 500 in 119ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.7s (2365 modules)
+ GET /_next/static/webpack/bf4577dd57c8574a.webpack.hot-update.json 404 in 2386ms
+ GET /login 200 in 903ms
+ ✓ Compiled in 571ms (1077 modules)
+ ✓ Compiled in 460ms (1077 modules)

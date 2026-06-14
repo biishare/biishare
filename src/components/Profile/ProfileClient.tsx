@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Alert,
   Avatar,
@@ -18,16 +19,26 @@ import {
   Typography,
 } from '@mui/material'
 import {
-  ArrowRight,
   Bell,
   Bookmark,
   CheckCircle2,
   Clock3,
   Coins,
   Gift,
+  LogOut,
   RotateCcw,
   Star,
 } from 'lucide-react'
+
+import {
+  AuthUser,
+  clearAuthSession,
+  getCurrentUser,
+  getAuthSession,
+  logoutUser,
+  saveAuthUser,
+} from '../../../services/auth.service'
+import ProfileImageUploader from './ProfileImageUploader'
 
 type ProfileSection = 'saved' | 'history' | 'rewards'
 
@@ -66,15 +77,9 @@ type Redemption = {
   status: 'pending' | 'used'
 }
 
-const user = {
-  name: 'Antonio Marques',
-  points: 1250,
-  usedPoints: 0,
-  totalEarned: 1250,
-}
-
 const DAILY_QUESTION_LIMIT = 20
 const RESET_QUESTION_LIMIT_COST = 150
+const INITIAL_POINTS = 0
 
 const savedPosts: SavedPost[] = [
   {
@@ -177,14 +182,25 @@ function createRedemptionCode(rewardId: string) {
   return `BII-${rewardId.toUpperCase()}-${Date.now().toString().slice(-5)}-${random}`
 }
 
-export default function ProfileClient() {
+export default function ProfileClient({
+  expectedUsername,
+  initialUser,
+  redirectToUsername = false,
+}: {
+  expectedUsername?: string
+  initialUser?: AuthUser
+  redirectToUsername?: boolean
+}) {
+  const router = useRouter()
+  const [authUser, setAuthUser] = useState<AuthUser | null>(initialUser ?? null)
+  const [isCheckingSession, setIsCheckingSession] = useState(!initialUser)
   const [activeSection, setActiveSection] = useState<ProfileSection>('saved')
   const [selectedRewardId, setSelectedRewardId] = useState(rewards[1].id)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [resetLimitOpen, setResetLimitOpen] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
-  const [availablePoints, setAvailablePoints] = useState(user.points)
-  const [usedPoints, setUsedPoints] = useState(user.usedPoints)
+  const [availablePoints, setAvailablePoints] = useState(INITIAL_POINTS)
+  const [usedPoints, setUsedPoints] = useState(0)
   const [answeredToday, setAnsweredToday] = useState(DAILY_QUESTION_LIMIT)
   const [lastRedemption, setLastRedemption] = useState<Redemption | null>(null)
   const [redemptions, setRedemptions] = useState<Redemption[]>([
@@ -204,10 +220,53 @@ export default function ProfileClient() {
     [selectedRewardId],
   )
 
+  useEffect(() => {
+    const redirectToCanonicalProfile = (user: AuthUser) => {
+      if (redirectToUsername && user.username) {
+        router.replace(`/profile/${user.username}`)
+        return true
+      }
+
+      if (expectedUsername && user.username && user.username !== expectedUsername) {
+        router.replace(`/profile/${user.username}`)
+        return true
+      }
+
+      return false
+    }
+
+    if (initialUser) {
+      saveAuthUser(initialUser)
+      setAuthUser(initialUser)
+      setIsCheckingSession(false)
+      redirectToCanonicalProfile(initialUser)
+      return
+    }
+
+    const cachedSession = getAuthSession()
+
+    if (cachedSession?.user) {
+      setAuthUser(cachedSession.user)
+    }
+
+    getCurrentUser()
+      .then((user) => {
+        saveAuthUser(user)
+        setAuthUser(user)
+        redirectToCanonicalProfile(user)
+      })
+      .catch(() => {
+        clearAuthSession()
+        router.replace('/login')
+      })
+      .finally(() => setIsCheckingSession(false))
+  }, [expectedUsername, initialUser, redirectToUsername, router])
+
   const canRedeem = selectedReward.available && availablePoints >= selectedReward.cost
   const remainingQuestions = Math.max(DAILY_QUESTION_LIMIT - answeredToday, 0)
   const canResetQuestionLimit =
     remainingQuestions === 0 && availablePoints >= RESET_QUESTION_LIMIT_COST
+  const totalEarned = availablePoints + usedPoints
 
   const handleRedeem = () => {
     if (!canRedeem) return
@@ -253,16 +312,76 @@ export default function ProfileClient() {
     )
   }
 
+  const handleLogout = () => {
+    logoutUser()
+      .catch(() => undefined)
+      .finally(() => {
+        clearAuthSession()
+        setAuthUser(null)
+        router.replace('/login')
+        router.refresh()
+      })
+  }
+
+  if (isCheckingSession || !authUser) {
+    return (
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <Paper
+          elevation={0}
+          sx={{
+            border: '1px solid #e5e7eb',
+            borderRadius: 3,
+            p: { xs: 3, md: 5 },
+            background: '#fff',
+          }}
+        >
+          <Typography fontWeight={900}>A verificar sessao...</Typography>
+          <Typography color="text.secondary" mt={0.5}>
+            Aguarde um momento.
+          </Typography>
+        </Paper>
+      </main>
+    )
+  }
+
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-      <ProfileHero points={availablePoints} />
+    <main className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, .92fr) minmax(360px, 1.08fr)' },
+          gap: { xs: 1.5, lg: 2 },
+          alignItems: 'stretch',
+        }}
+      >
+        <ProfileHero
+          avatarUrl={authUser.avatarUrl}
+          coverUrl={authUser.coverUrl}
+          email={authUser.email}
+          name={authUser.name}
+          onLogout={handleLogout}
+          onUserUpdated={setAuthUser}
+          points={availablePoints}
+          username={authUser.username}
+        />
+
+        <QuickSummary
+          answeredToday={answeredToday}
+          availablePoints={availablePoints}
+          canResetQuestionLimit={canResetQuestionLimit}
+          onOpenResetLimit={() => setResetLimitOpen(true)}
+          remainingQuestions={remainingQuestions}
+          totalEarned={totalEarned}
+          usedPoints={usedPoints}
+        />
+      </Box>
 
       <Box
         sx={{
-          mt: 3,
+          mt: 2,
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: { xs: 1.6, md: 2.5 },
+          gap: { xs: 1, md: 1.2 },
         }}
       >
         {sectionCards.map((card) => (
@@ -277,22 +396,13 @@ export default function ProfileClient() {
         ))}
       </Box>
 
-      <QuickSummary
-        answeredToday={answeredToday}
-        availablePoints={availablePoints}
-        canResetQuestionLimit={canResetQuestionLimit}
-        onOpenResetLimit={() => setResetLimitOpen(true)}
-        remainingQuestions={remainingQuestions}
-        usedPoints={usedPoints}
-      />
-
       <Paper
         elevation={0}
         sx={{
-          mt: 3,
+          mt: 2,
           border: '1px solid #e5e7eb',
-          borderRadius: 3,
-          p: { xs: 2, md: 3 },
+          borderRadius: 2,
+          p: { xs: 1.5, md: 2 },
           background: '#fff',
         }}
       >
@@ -344,7 +454,7 @@ export default function ProfileClient() {
             sx={{
               textTransform: 'none',
               fontWeight: 800,
-              background: 'linear-gradient(135deg,#7c5ce6,#6247d9)',
+              background: 'linear-gradient(135deg,#f59e0b,#f97316)',
             }}
           >
             Confirmar resgate
@@ -386,7 +496,7 @@ export default function ProfileClient() {
             sx={{
               textTransform: 'none',
               fontWeight: 800,
-              background: 'linear-gradient(135deg,#7c5ce6,#6247d9)',
+              background: 'linear-gradient(135deg,#f59e0b,#f97316)',
             }}
           >
             Restabelecer limite
@@ -408,8 +518,8 @@ export default function ProfileClient() {
           <Paper
             elevation={0}
             sx={{
-              border: '1px dashed #7c5ce6',
-              background: '#f4f0ff',
+              border: '1px dashed #fdba74',
+              background: '#fffaf3',
               borderRadius: 2,
               p: 2,
             }}
@@ -444,123 +554,224 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ProfileHero({ points }: { points: number }) {
+function ProfileHero({
+  avatarUrl,
+  coverUrl,
+  email,
+  name,
+  onLogout,
+  onUserUpdated,
+  points,
+  username,
+}: {
+  avatarUrl?: string
+  coverUrl?: string
+  email: string
+  name: string
+  onLogout: () => void
+  onUserUpdated: (user: AuthUser) => void
+  points: number
+  username?: string
+}) {
   return (
     <Paper
       elevation={0}
       sx={{
         position: 'relative',
         overflow: 'hidden',
-        minHeight: { xs: 220, md: 250 },
-        borderRadius: 4,
-        p: { xs: 3, md: 5 },
-        border: '1px solid #e7ddff',
-        background:
-          'linear-gradient(135deg, #eee7ff 0%, #fbfaff 48%, #e5dcff 100%)',
+        minHeight: { xs: 174, md: 190 },
+        height: '100%',
+        borderRadius: 2,
+        p: { xs: 2, md: 2.5 },
+        border: '1px solid #e5e7eb',
+        background: coverUrl
+          ? `linear-gradient(90deg, rgba(15,23,42,.82), rgba(15,23,42,.28)), url(${coverUrl}) center/cover`
+          : 'linear-gradient(135deg, #ffffff 0%, #ffffff 58%, #fffaf3 100%)',
 
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          width: 520,
-          height: 220,
-          right: -70,
-          bottom: -80,
-          borderRadius: '50%',
-          background: 'rgba(124,92,230,.12)',
-          transform: 'rotate(-8deg)',
-        },
-
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          width: 360,
-          height: 180,
-          right: 20,
-          bottom: -110,
-          borderRadius: '50%',
-          background: 'rgba(124,92,230,.08)',
+        '&:hover .profile-cover-action, &:focus-within .profile-cover-action': {
+          opacity: 1,
+          pointerEvents: 'auto',
         },
       }}
     >
+      <ProfileImageUploader
+        slot="cover"
+        onUserUpdated={onUserUpdated}
+      />
+
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ xs: 'flex-start', sm: 'center' }}
-        gap={{ xs: 2, md: 4 }}
+        gap={{ xs: 1.6, md: 2.2 }}
         sx={{ position: 'relative', zIndex: 1 }}
       >
-        <Avatar
+        <Box
           sx={{
-            width: { xs: 112, md: 156 },
-            height: { xs: 112, md: 156 },
-            background: 'linear-gradient(145deg,#7c5ce6,#6247d9)',
-            boxShadow: '0 18px 38px rgba(98,71,217,.24)',
+            position: 'relative',
+            flexShrink: 0,
+
+            '&:hover .profile-avatar-action, &:focus-within .profile-avatar-action': {
+              opacity: 1,
+              pointerEvents: 'auto',
+            },
           }}
         >
-          <Box
+          <Avatar
+            src={avatarUrl}
+            alt={name}
             sx={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
+              width: { xs: 88, md: 112 },
+              height: { xs: 88, md: 112 },
+              border: coverUrl
+                ? '3px solid rgba(255,255,255,.9)'
+                : '3px solid #fff',
+              background: 'linear-gradient(145deg,#475569,#111827)',
+              boxShadow: '0 18px 38px rgba(15,23,42,.18)',
+              overflow: 'hidden',
 
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: '22%',
-                left: '50%',
-                width: '34%',
-                height: '34%',
-                borderRadius: '50%',
-                background: '#fff',
-                transform: 'translateX(-50%)',
+              '& .MuiAvatar-img': {
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
               },
-
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                left: '18%',
-                right: '18%',
-                bottom: '-4%',
-                height: '48%',
-                borderRadius: '50% 50% 0 0',
-                background: '#fff',
-              },
-            }}
-          />
-        </Avatar>
-
-        <Box>
-          <Typography
-            sx={{
-              fontSize: { xs: 30, md: 38 },
-              fontWeight: 900,
-              lineHeight: 1.05,
-              color: '#111827',
             }}
           >
-            {user.name}
+            {!avatarUrl && (
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '22%',
+                    left: '50%',
+                    width: '34%',
+                    height: '34%',
+                    borderRadius: '50%',
+                    background: '#fff',
+                    transform: 'translateX(-50%)',
+                  },
+
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    left: '18%',
+                    right: '18%',
+                    bottom: '-4%',
+                    height: '48%',
+                    borderRadius: '50% 50% 0 0',
+                    background: '#fff',
+                  },
+                }}
+              />
+            )}
+          </Avatar>
+
+          <ProfileImageUploader
+            slot="avatar"
+            onUserUpdated={onUserUpdated}
+          />
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            sx={{
+              fontSize: { xs: 26, md: 31 },
+              fontWeight: 900,
+              lineHeight: 1.05,
+              color: coverUrl ? '#fff' : '#111827',
+              pr: { xs: 10, md: 0 },
+            }}
+          >
+            {name}
           </Typography>
 
-          <Paper
-            elevation={0}
+          <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap" mt={0.8}>
+            {username && (
+              <Chip
+                size="small"
+                label={`@${username}`}
+                sx={{
+                  height: 24,
+                  borderRadius: 1.5,
+                  fontWeight: 800,
+                  color: coverUrl ? '#fff' : '#ea580c',
+                  background: coverUrl ? 'rgba(255,255,255,.16)' : '#fff7ed',
+                }}
+              />
+            )}
+            <Typography
+              color={coverUrl ? 'rgba(255,255,255,.82)' : 'text.secondary'}
+              fontSize={14}
+            >
+              {email}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            flexWrap="wrap"
             sx={{
-              mt: 2.5,
+              mt: 1.8,
+            }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 1.4,
-              px: 2,
-              py: 1.3,
+              px: 1.4,
+              py: 0.9,
               borderRadius: 2,
-              border: '1px solid rgba(124,92,230,.16)',
-              background: 'rgba(255,255,255,.78)',
-              boxShadow: '0 14px 30px rgba(31,41,55,.08)',
+              border: '1px solid #e5e7eb',
+              background: '#fff',
+              boxShadow: '0 10px 22px rgba(31,41,55,.08)',
             }}
-          >
-            <Star size={25} fill="#fbbf24" color="#fbbf24" />
-            <Typography fontSize={28} fontWeight={900} color="#1f1b4d">
-              {points.toLocaleString('pt-PT')}
-            </Typography>
-            <Typography color="text.secondary">Pontos</Typography>
-          </Paper>
+            >
+              <Star size={20} fill="#fbbf24" color="#fbbf24" />
+              <Typography fontSize={21} fontWeight={900} color="#111827">
+                {points.toLocaleString('pt-PT')}
+              </Typography>
+              <Typography color="text.secondary" fontSize={13}>
+                pontos
+              </Typography>
+            </Paper>
+
+            <Button
+              variant="text"
+              onClick={onLogout}
+              startIcon={<LogOut size={16} />}
+              sx={{
+                height: 38,
+                px: 1.25,
+                borderRadius: 1.5,
+                textTransform: 'none',
+                fontWeight: 800,
+                color: coverUrl ? 'rgba(255,255,255,.84)' : '#64748b',
+                border: '1px solid',
+                borderColor: coverUrl ? 'rgba(255,255,255,.18)' : '#e5e7eb',
+                background: coverUrl ? 'rgba(255,255,255,.08)' : 'transparent',
+
+                '&:hover': {
+                  color: coverUrl ? '#fff' : '#334155',
+                  borderColor: coverUrl ? 'rgba(255,255,255,.32)' : '#cbd5e1',
+                  background: coverUrl ? 'rgba(255,255,255,.14)' : '#f8fafc',
+                },
+
+                '& .MuiButton-startIcon': {
+                  mr: 0.7,
+                },
+              }}
+            >
+              Sair
+            </Button>
+          </Stack>
         </Box>
       </Stack>
     </Paper>
@@ -586,52 +797,56 @@ function SectionCard({
       component="button"
       onClick={onClick}
       sx={{
-        minHeight: 220,
+        minHeight: 74,
         width: '100%',
-        border: active ? '2px solid #7c5ce6' : '1px solid #e5e7eb',
-        borderRadius: 3,
-        p: 2.5,
+        border: active ? '1px solid #fb923c' : '1px solid #e5e7eb',
+        borderRadius: 2,
+        p: 1.4,
         cursor: 'pointer',
-        background: active ? '#fbfaff' : '#fff',
-        textAlign: 'center',
+        background: active ? '#fffaf3' : '#fff',
+        textAlign: 'left',
+        boxShadow: active
+          ? '0 0 0 3px rgba(249,115,22,.08)'
+          : 'none',
         transition: 'all .2s ease',
 
         '&:hover': {
-          borderColor: '#7c5ce6',
-          transform: 'translateY(-3px)',
-          boxShadow: '0 18px 34px rgba(31,41,55,.08)',
+          borderColor: '#fdba74',
+          transform: 'translateY(-1px)',
+          boxShadow: active
+            ? '0 12px 24px rgba(31,41,55,.07), 0 0 0 3px rgba(249,115,22,.08)'
+            : '0 12px 24px rgba(31,41,55,.07)',
         },
       }}
     >
-      <Stack alignItems="center" justifyContent="center" height="100%">
+      <Stack direction="row" alignItems="center" gap={1.2} height="100%">
         <Box
           sx={{
-            width: 48,
-            height: 48,
+            width: 40,
+            height: 40,
             display: 'grid',
             placeItems: 'center',
-            color: '#6d50dc',
-            mb: 2,
+            borderRadius: 2,
+            color: active ? '#ea580c' : '#64748b',
+            background: active ? '#ffedd5' : '#f8fafc',
+            flexShrink: 0,
           }}
         >
-          <Icon size={43} fill="rgba(124,92,230,.2)" />
+          <Icon
+            size={24}
+            fill={active ? 'rgba(249,115,22,.14)' : 'rgba(100,116,139,.1)'}
+          />
         </Box>
 
-        <Typography fontWeight={900} fontSize={18} color="#111827">
-          {title}
-        </Typography>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography fontWeight={900} fontSize={15} color="#111827" noWrap>
+            {title}
+          </Typography>
 
-        <Typography
-          mt={1.2}
-          color="text.secondary"
-          fontSize={14}
-          lineHeight={1.55}
-          maxWidth={220}
-        >
-          {description}
-        </Typography>
-
-        <ArrowRight size={22} color="#64748b" style={{ marginTop: 18 }} />
+          <Typography color="text.secondary" fontSize={13} lineHeight={1.35} noWrap>
+            {description}
+          </Typography>
+        </Box>
       </Stack>
     </Paper>
   )
@@ -643,6 +858,7 @@ function QuickSummary({
   canResetQuestionLimit,
   onOpenResetLimit,
   remainingQuestions,
+  totalEarned,
   usedPoints,
 }: {
   answeredToday: number
@@ -650,30 +866,39 @@ function QuickSummary({
   canResetQuestionLimit: boolean
   onOpenResetLimit: () => void
   remainingQuestions: number
+  totalEarned: number
   usedPoints: number
 }) {
   const limitReached = remainingQuestions === 0
 
   return (
-    <Box mt={4}>
-      <Typography fontSize={22} fontWeight={900} mb={1.6}>
-        Resumo rapido
-      </Typography>
-
+    <Box sx={{ display: 'grid', gap: 1.2, height: '100%' }}>
       <Paper
         elevation={0}
         sx={{
           border: '1px solid #e5e7eb',
-          borderRadius: 3,
-          p: { xs: 2, md: 2.5 },
+          borderRadius: 2,
+          p: { xs: 1.5, md: 1.8 },
           background: '#fff',
         }}
       >
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.3}>
+          <Box>
+            <Typography fontSize={18} fontWeight={900}>
+              Resumo
+            </Typography>
+            <Typography color="text.secondary" fontSize={13}>
+              Pontos e atividade de hoje
+            </Typography>
+          </Box>
+          <Chip size="small" label="Hoje" sx={{ fontWeight: 800 }} />
+        </Stack>
+
         <Box
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: { xs: 2, md: 0 },
+            gap: { xs: 1, md: 1 },
           }}
         >
           <SummaryItem
@@ -690,7 +915,7 @@ function QuickSummary({
           <SummaryItem
             icon={<CheckCircle2 size={24} color="#22c55e" />}
             label="Pontos totais ganhos"
-            value={user.totalEarned.toLocaleString('pt-PT')}
+            value={totalEarned.toLocaleString('pt-PT')}
             bordered
           />
         </Box>
@@ -699,10 +924,9 @@ function QuickSummary({
       <Paper
         elevation={0}
         sx={{
-          mt: 1.5,
           border: limitReached ? '1px solid #fbbf24' : '1px solid #e5e7eb',
-          borderRadius: 3,
-          p: { xs: 2, md: 2.5 },
+          borderRadius: 2,
+          p: { xs: 1.5, md: 1.8 },
           background: limitReached ? '#fffbeb' : '#fff',
         }}
       >
@@ -710,12 +934,14 @@ function QuickSummary({
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
           alignItems={{ xs: 'stretch', md: 'center' }}
-          gap={2}
+          gap={1.5}
         >
           <Stack direction="row" alignItems="center" gap={1.4}>
-            <Clock3 size={26} color={limitReached ? '#d97706' : '#7c5ce6'} />
+            <Clock3 size={22} color={limitReached ? '#d97706' : '#f97316'} />
             <Box>
-              <Typography fontWeight={900}>Perguntas diarias</Typography>
+              <Typography fontWeight={900} fontSize={15}>
+                Perguntas diarias
+              </Typography>
               <Typography color="text.secondary" fontSize={14}>
                 {answeredToday}/{DAILY_QUESTION_LIMIT} respondidas hoje
               </Typography>
@@ -729,9 +955,9 @@ function QuickSummary({
               sx={{
                 height: 9,
                 borderRadius: 99,
-                backgroundColor: '#ede9fe',
+                backgroundColor: '#e5e7eb',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: limitReached ? '#f59e0b' : '#7c5ce6',
+                  backgroundColor: limitReached ? '#f59e0b' : '#f97316',
                 },
               }}
             />
@@ -750,14 +976,14 @@ function QuickSummary({
             onClick={onOpenResetLimit}
             startIcon={<RotateCcw size={17} />}
             sx={{
-              height: 42,
-              px: 2,
+              height: 38,
+              px: 1.6,
               borderRadius: 2,
               textTransform: 'none',
               fontWeight: 900,
               whiteSpace: 'nowrap',
               background: limitReached
-                ? 'linear-gradient(135deg,#7c5ce6,#6247d9)'
+                ? 'linear-gradient(135deg,#f59e0b,#f97316)'
                 : undefined,
             }}
           >
@@ -788,18 +1014,22 @@ function SummaryItem({
       gap={1.4}
       sx={{
         minHeight: 70,
+        border: '1px solid #f1f5f9',
+        borderRadius: 2,
+        p: 1.2,
+        background: '#fff',
         borderLeft: {
           xs: 'none',
-          md: bordered ? '1px solid #e5e7eb' : 'none',
+          md: bordered ? '1px solid #f1f5f9' : '1px solid #f1f5f9',
         },
       }}
     >
       {icon}
       <Box>
-        <Typography fontSize={25} fontWeight={900} lineHeight={1}>
+        <Typography fontSize={22} fontWeight={900} lineHeight={1}>
           {value}
         </Typography>
-        <Typography color="text.secondary" mt={0.8}>
+        <Typography color="text.secondary" mt={0.6} fontSize={13}>
           {label}
         </Typography>
       </Box>
@@ -819,7 +1049,7 @@ function SavedPosts() {
           mt: 2,
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 1.5,
+          gap: 1.2,
         }}
       >
         {savedPosts.map((post) => (
@@ -829,7 +1059,7 @@ function SavedPosts() {
             sx={{
               border: '1px solid #e5e7eb',
               borderRadius: 2,
-              p: 2,
+              p: 1.5,
             }}
           >
             <Stack direction="row" justifyContent="space-between" gap={1}>
@@ -839,7 +1069,7 @@ function SavedPosts() {
               </Typography>
             </Stack>
 
-            <Typography mt={1.4} fontWeight={900}>
+            <Typography mt={1.2} fontWeight={900} fontSize={15} lineHeight={1.35}>
               {post.title}
             </Typography>
 
@@ -851,12 +1081,12 @@ function SavedPosts() {
               variant="determinate"
               value={post.progress}
               sx={{
-                mt: 1.6,
+                mt: 1.2,
                 height: 7,
                 borderRadius: 99,
-                backgroundColor: '#ede9fe',
+                backgroundColor: '#e5e7eb',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: '#7c5ce6',
+                  backgroundColor: '#f97316',
                 },
               }}
             />
@@ -882,7 +1112,7 @@ function PointsHistory() {
             justifyContent="space-between"
             alignItems="center"
             gap={2}
-            py={1.7}
+            py={1.25}
           >
             <Box>
               <Typography fontWeight={900}>{event.label}</Typography>
@@ -952,7 +1182,7 @@ function Rewards({
             borderRadius: 2,
             textTransform: 'none',
             fontWeight: 900,
-            background: 'linear-gradient(135deg,#7c5ce6,#6247d9)',
+            background: 'linear-gradient(135deg,#f59e0b,#f97316)',
             boxShadow: 'none',
           }}
         >
@@ -962,10 +1192,10 @@ function Rewards({
 
       <Box
         sx={{
-          mt: 2,
+          mt: 1.5,
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 1.5,
+          gap: 1.2,
         }}
       >
         {rewards.map((reward) => {
@@ -977,19 +1207,22 @@ function Rewards({
               elevation={0}
               onClick={() => onSelect(reward.id)}
               sx={{
-                border: active ? '2px solid #7c5ce6' : '1px solid #e5e7eb',
+                border: active ? '1px solid #fb923c' : '1px solid #e5e7eb',
                 borderRadius: 2,
-                p: 2,
+                p: 1.5,
                 cursor: 'pointer',
-                background: active ? '#fbfaff' : '#fff',
+                background: active ? '#fffaf3' : '#fff',
+                boxShadow: active
+                  ? '0 0 0 3px rgba(249,115,22,.08)'
+                  : 'none',
               }}
             >
               <Stack direction="row" alignItems="center" gap={1}>
-                <Gift size={20} color="#7c5ce6" />
+                <Gift size={20} color={active ? '#f97316' : '#64748b'} />
                 <Typography fontWeight={900}>{reward.title}</Typography>
               </Stack>
 
-              <Typography mt={1.2} fontSize={28} fontWeight={900}>
+              <Typography mt={1} fontSize={24} fontWeight={900}>
                 {reward.amount}
               </Typography>
 
@@ -1008,13 +1241,13 @@ function Rewards({
         })}
       </Box>
 
-      <Divider sx={{ my: 3 }} />
+      <Divider sx={{ my: 2 }} />
 
       <Typography fontSize={20} fontWeight={900}>
         Registos de resgate
       </Typography>
 
-      <Stack spacing={1.2} mt={1.5}>
+      <Stack spacing={1} mt={1.2}>
         {redemptions.map((redemption) => (
           <Paper
             key={redemption.id}
@@ -1022,7 +1255,7 @@ function Rewards({
             sx={{
               border: '1px solid #e5e7eb',
               borderRadius: 2,
-              p: 2,
+              p: 1.5,
             }}
           >
             <Stack

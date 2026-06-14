@@ -17,6 +17,7 @@ import { SUBJECTS } from "../../../constants/subjects";
 import { FullscreenPdfViewer } from "../Modal/PdfImageViewer";
 import { PdfImageViewer } from "../Document/PdfImageViewer";
 import VideoPlay from "../VideoPlay/VideoPlay";
+import RelatedContent from "./RelatedContent";
 
 interface DetailContentProps {
   post: PostDTO;
@@ -156,6 +157,8 @@ export default function DetailContent({ post }: DetailContentProps) {
           />
         </Paper>
       </Box>
+
+      <RelatedContent post={post} />
 
       {/* FULLSCREEN */}
       {contentType === "document" && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Alert,
   Box,
@@ -22,13 +23,20 @@ import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 
 import type { LoginFormValues } from '../../../lib/validations/auth'
 import { useUserLoginForm } from '../../../hooks/user-login-form'
+import {
+  getApiErrorMessage,
+  loginUser,
+  saveAuthSession,
+} from '../../../services/auth.service'
 import { IconGoogle } from '../IconGoogle/IconGoogle'
 import Benefit from './Benefit'
 
 export default function LoginForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(true)
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const form = useUserLoginForm()
 
   const {
@@ -39,9 +47,18 @@ export default function LoginForm() {
   } = form
 
   const onSubmit = async (values: LoginFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setSubmittedEmail(values.email)
-    reset()
+    try {
+      setSubmitError(null)
+      const session = await loginUser(values)
+      saveAuthSession(session)
+      setSubmittedEmail(session.user.email)
+      reset()
+      router.push(session.user.username ? `/profile/${session.user.username}` : '/profile')
+    } catch (error) {
+      setSubmitError(
+        getApiErrorMessage(error, 'Nao foi possivel iniciar sessao.')
+      )
+    }
   }
 
   return (
@@ -147,6 +164,8 @@ export default function LoginForm() {
                 Sessao iniciada para {submittedEmail}
               </Alert>
             )}
+
+            {submitError && <Alert severity="error">{submitError}</Alert>}
 
             <Button
               component="a"
@@ -282,6 +301,3 @@ export default function LoginForm() {
     </main>
   )
 }
-
-
-

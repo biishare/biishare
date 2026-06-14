@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Alert,
   Box,
@@ -18,17 +19,49 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Eye, EyeOff, LockKeyhole, Mail, UserRound } from 'lucide-react'
+import {
+  AtSign,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  UserRound,
+  XCircle,
+} from 'lucide-react'
 
 import type { RegisterFormValues } from '../../../lib/validations/auth'
 import { useUserRegisterForm } from '../../../hooks/user-register-form'
+import {
+  checkUsernameAvailability,
+  getApiErrorMessage,
+  registerUser,
+  saveAuthSession,
+} from '../../../services/auth.service'
 import { IconGoogle } from '../IconGoogle/IconGoogle'
 import Benefit from './Benefit'
 
+type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'error'
+
+function formatUsernameInput(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-{2,}/g, '-')
+    .slice(0, 30)
+}
+
 export default function RegisterForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [submittedName, setSubmittedName] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle')
   const form = useUserRegisterForm()
 
   const {
@@ -36,15 +69,70 @@ export default function RegisterForm() {
     handleSubmit,
     register,
     reset,
+    setValue,
+    watch,
   } = form
+  const username = watch('username')
+  const usernameField = register('username')
+
+  useEffect(() => {
+    const trimmedUsername = username.trim()
+
+    if (!trimmedUsername || errors.username) {
+      setUsernameStatus('idle')
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setUsernameStatus('checking')
+
+      checkUsernameAvailability(trimmedUsername)
+        .then((result) => {
+          setUsernameStatus(result.available ? 'available' : 'taken')
+        })
+        .catch(() => {
+          setUsernameStatus('error')
+        })
+    }, 450)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [errors.username, username])
+
+  const usernameHelperText =
+    errors.username?.message ||
+    (usernameStatus === 'checking' && 'A verificar disponibilidade...') ||
+    (usernameStatus === 'available' && 'Username disponivel') ||
+    (usernameStatus === 'taken' && 'Este username ja esta em uso') ||
+    (usernameStatus === 'error' &&
+      'Nao foi possivel verificar agora. Vamos validar ao criar a conta.')
+
+  const usernameAdornment =
+    usernameStatus === 'checking' ? (
+      <Loader2 size={18} className="animate-spin" />
+    ) : usernameStatus === 'available' ? (
+      <CheckCircle2 size={18} color="#16a34a" />
+    ) : usernameStatus === 'taken' ? (
+      <XCircle size={18} color="#dc2626" />
+    ) : null
 
   const onSubmit = async (values: RegisterFormValues) => {
-    if (!acceptedTerms) return
+    if (!acceptedTerms || usernameStatus === 'checking' || usernameStatus === 'taken') {
+      return
+    }
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setSubmittedName(values.name)
-    reset()
-    setAcceptedTerms(false)
+    try {
+      setSubmitError(null)
+      const session = await registerUser(values)
+      saveAuthSession(session)
+      setSubmittedName(session.user.name)
+      reset()
+      setAcceptedTerms(false)
+      router.push(session.user.username ? `/profile/${session.user.username}` : '/profile')
+    } catch (error) {
+      setSubmitError(
+        getApiErrorMessage(error, 'Nao foi possivel criar a conta.')
+      )
+    }
   }
 
   return (
@@ -152,6 +240,8 @@ export default function RegisterForm() {
               </Alert>
             )}
 
+            {submitError && <Alert severity="error">{submitError}</Alert>}
+
             <Button
               component="a"
               href="/api/auth/google"
@@ -195,6 +285,39 @@ export default function RegisterForm() {
                         <UserRound size={18} />
                       </InputAdornment>
                     ),
+                  }}
+                />
+
+                <TextField
+                  label="Username"
+                  fullWidth
+                  error={Boolean(errors.username) || usernameStatus === 'taken'}
+                  helperText={usernameHelperText || ' '}
+                  placeholder="joao-silva"
+                  {...usernameField}
+                  onChange={(event) => {
+                    const formattedUsername = formatUsernameInput(event.target.value)
+                    setValue('username', formattedUsername, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true,
+                    })
+                  }}
+                  inputProps={{
+                    maxLength: 30,
+                    autoComplete: 'username',
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AtSign size={18} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: usernameAdornment ? (
+                      <InputAdornment position="end">
+                        {usernameAdornment}
+                      </InputAdornment>
+                    ) : undefined,
                   }}
                 />
 
@@ -289,7 +412,12 @@ export default function RegisterForm() {
                   type="submit"
                   variant="contained"
                   size="large"
-                  disabled={!acceptedTerms || isSubmitting}
+                  disabled={
+                    !acceptedTerms ||
+                    isSubmitting ||
+                    usernameStatus === 'checking' ||
+                    usernameStatus === 'taken'
+                  }
                   sx={{
                     height: 48,
                     borderRadius: 2,

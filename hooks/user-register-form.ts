@@ -8,6 +8,7 @@ import {
 
 export const registerFormDefaultValues: RegisterFormValues = {
   name: '',
+  username: '',
   email: '',
   password: '',
   confirmPassword: '',

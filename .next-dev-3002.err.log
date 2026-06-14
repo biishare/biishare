@@ -123,3 +123,65 @@ digest: "1414434345"
     at r2 (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:41:1673)
     at async doRender (E:\Marques\biishare\node_modules\next\dist\server\base-server.js:1438:30)
     at async cacheEntry.responseCache.get.routeKind (E:\Marques\biishare\node_modules\next\dist\server\base-server.js:1599:28)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (116:16) @ Benefit
+ ⨯ ReferenceError: Benefit is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:142:113)
+digest: "4183596329"
+[0m [90m 114 |[39m               }}[0m
+[0m [90m 115 |[39m             [33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 116 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Plataforma"[39m value[33m=[39m[32m"Social"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 117 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Conteudos"[39m value[33m=[39m[32m"Educativos"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 118 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Experiencia"[39m value[33m=[39m[32m"Gamificada"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 119 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (116:16) @ Benefit
+ ⨯ ReferenceError: Benefit is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:142:113)
+digest: "4183596329"
+[0m [90m 114 |[39m               }}[0m
+[0m [90m 115 |[39m             [33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 116 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Plataforma"[39m value[33m=[39m[32m"Social"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 117 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Conteudos"[39m value[33m=[39m[32m"Educativos"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 118 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Experiencia"[39m value[33m=[39m[32m"Gamificada"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 119 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (116:16) @ Benefit
+ ⨯ ReferenceError: Benefit is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:142:113)
+digest: "4183596329"
+[0m [90m 114 |[39m               }}[0m
+[0m [90m 115 |[39m             [33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 116 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Plataforma"[39m value[33m=[39m[32m"Social"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 117 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Conteudos"[39m value[33m=[39m[32m"Educativos"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 118 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Experiencia"[39m value[33m=[39m[32m"Gamificada"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 119 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (116:16) @ Benefit
+ ⨯ ReferenceError: Benefit is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:142:113)
+digest: "4183596329"
+[0m [90m 114 |[39m               }}[0m
+[0m [90m 115 |[39m             [33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 116 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Plataforma"[39m value[33m=[39m[32m"Social"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 117 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Conteudos"[39m value[33m=[39m[32m"Educativos"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 118 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Experiencia"[39m value[33m=[39m[32m"Gamificada"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 119 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ src\components\Auth\LoginForm.tsx (116:16) @ Benefit
+ ⨯ ReferenceError: Benefit is not defined
+    at LoginForm (./src/components/Auth/LoginForm.tsx:142:113)
+digest: "4183596329"
+[0m [90m 114 |[39m               }}[0m
+[0m [90m 115 |[39m             [33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 116 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Plataforma"[39m value[33m=[39m[32m"Social"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 117 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Conteudos"[39m value[33m=[39m[32m"Educativos"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 118 |[39m               [33m<[39m[33mBenefit[39m label[33m=[39m[32m"Experiencia"[39m value[33m=[39m[32m"Gamificada"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 119 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.

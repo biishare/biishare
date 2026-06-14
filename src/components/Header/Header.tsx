@@ -1,11 +1,31 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, IconButton, Tooltip, Typography } from '@mui/material'
 import { UserCircle, Zap } from 'lucide-react'
 
-export default function Header() {
+import { AuthUser, getAuthSession } from '../../../services/auth.service'
+
+export default function Header({
+  initialUser,
+}: {
+  initialUser?: AuthUser | null
+}) {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(initialUser ?? null)
+  const profileHref = authUser?.username ? `/profile/${authUser.username}` : '/profile'
+  const profileTooltip = authUser?.name || 'Perfil'
+
+  useEffect(() => {
+    if (initialUser !== undefined) {
+      setAuthUser(initialUser)
+      return
+    }
+
+    setAuthUser(getAuthSession()?.user ?? null)
+  }, [initialUser])
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
@@ -61,14 +81,16 @@ export default function Header() {
         </Link>
 
         <StackActions>
-          <Tooltip title="Perfil">
-            <Link href="/profile" style={{ textDecoration: 'none' }}>
+          <Tooltip title={profileTooltip}>
+            <Link href={profileHref} style={{ textDecoration: 'none' }}>
               <IconButton
-                aria-label="Abrir perfil"
+                aria-label={profileTooltip}
                 sx={{
                   width: 42,
                   height: 42,
+                  p: 0,
                   border: '1px solid #e2e8f0',
+                  overflow: 'hidden',
                   color: '#f97316',
                   backgroundColor: '#fff',
                   '&:hover': {
@@ -77,7 +99,25 @@ export default function Header() {
                   },
                 }}
               >
-                <UserCircle size={22} />
+                {authUser?.avatarUrl ? (
+                  <Avatar
+                    src={authUser.avatarUrl}
+                    alt={authUser.name}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: '#f8fafc',
+
+                      '& .MuiAvatar-img': {
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      },
+                    }}
+                  />
+                ) : (
+                  <UserCircle size={22} />
+                )}
               </IconButton>
             </Link>
           </Tooltip>

@@ -28,6 +28,7 @@ interface Props {
   area?: string
   page: number
   limit?: number
+  title?: string
 }
 
 interface ShortsResponse {
@@ -41,6 +42,7 @@ export function ToqueRow({
   area,
   page,
   limit = 5,
+  title = 'Toques',
 }: Props) {
 
   const router = useRouter()
@@ -169,7 +171,7 @@ export function ToqueRow({
           fontSize={18}
           fontWeight={800}
         >
-          Toques
+          {title}
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
