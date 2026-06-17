@@ -4,68 +4,187 @@ import { Box, Paper, Skeleton } from '@mui/material'
 
 export default function DetailContentSkeleton() {
   return (
-    <div className="bg-amber-50 py-8 px-4 lg:px-24">
+    <Box
+      sx={{
+        px: { xs: 2, md: 6, lg: 10 },
+        py: 4,
+        maxWidth: 1400,
+        mx: 'auto',
+      }}
+    >
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 4,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
+          gap: 3,
         }}
       >
-        {/* HERO */}
-        <div className="md:w-[70%] w-full">
-          <Paper sx={{ p: 2, borderRadius: 2 }}>
-            {/* video/doc placeholder */}
+        <Box>
+          <Paper
+            sx={{
+              borderRadius: 3,
+              overflow: 'hidden',
+              background: '#000',
+            }}
+          >
             <Skeleton
               variant="rectangular"
+              animation="wave"
               sx={{
                 width: '100%',
                 aspectRatio: '16 / 9',
                 minHeight: {
-                  xs: 240,
+                  xs: 220,
                   sm: 320,
                   md: 520,
                 },
-                borderRadius: 2,
+                bgcolor: 'rgba(255,255,255,.12)',
               }}
             />
-
-            <Box mt={2}>
-              <Skeleton height={32} width="80%" />
-              <Skeleton height={24} width="60%" />
-            </Box>
           </Paper>
-        </div>
 
-        {/* PLAYLIST */}
-        <div className="md:w-[30%] w-full">
-          <Paper
+          <Box mt={2}>
+            <Skeleton
+              animation="wave"
+              height={34}
+              width="82%"
+            />
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 1,
+                mt: 1,
+              }}
+            >
+              {[92, 76, 58, 88].map((width, index) => (
+                <Skeleton
+                  key={index}
+                  variant="rounded"
+                  animation="wave"
+                  width={width}
+                  height={24}
+                  sx={{ borderRadius: 999 }}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Paper
+          sx={{
+            borderRadius: 3,
+            p: 2,
+            height: 'fit-content',
+            maxHeight: { md: '80vh' },
+            overflow: 'hidden',
+            position: 'sticky',
+            top: 20,
+          }}
+        >
+          <Skeleton
+            animation="wave"
+            height={28}
+            width="64%"
+            sx={{ mb: 2 }}
+          />
+
+          <Box
             sx={{
-              p: 2,
-              borderRadius: 2,
-              maxHeight: 520,
+              border: '1px solid #fcd34d',
+              borderRadius: 3,
               overflow: 'hidden',
             }}
           >
-            <Skeleton
-              height={28}
-              width="70%"
-              sx={{ mb: 2 }}
-            />
-
             {Array.from({ length: 6 }).map((_, index) => (
-              <Skeleton
+              <Box
                 key={index}
-                height={50}
                 sx={{
-                  mb: 1,
-                  borderRadius: 1,
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  px: 2.5,
+                  py: 1.5,
+                  borderBottom:
+                    index === 5 ? 'none' : '1px solid #fed7aa',
+                  bgcolor: index === 0 ? '#fef3c7' : '#fff',
                 }}
-              />
+              >
+                {index === 0 && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 4,
+                      bgcolor: '#f59e0b',
+                    }}
+                  />
+                )}
+
+                <Skeleton
+                  variant="circular"
+                  animation="wave"
+                  width={20}
+                  height={20}
+                  sx={{ flexShrink: 0 }}
+                />
+
+                <Skeleton
+                  animation="wave"
+                  height={18}
+                  width="100%"
+                />
+
+                <Skeleton
+                  animation="wave"
+                  height={16}
+                  width={34}
+                  sx={{ flexShrink: 0 }}
+                />
+              </Box>
             ))}
-          </Paper>
-        </div>
+          </Box>
+        </Paper>
       </Box>
-    </div>
+
+      <Box mt={5}>
+        <Skeleton
+          variant="rounded"
+          animation="wave"
+          width={150}
+          height={24}
+          sx={{ mb: 1.5 }}
+        />
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            overflow: 'hidden',
+          }}
+        >
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              variant="rounded"
+              animation="wave"
+              sx={{
+                flex: {
+                  xs: '0 0 140px',
+                  sm: '0 0 200px',
+                  md: '0 0 240px',
+                },
+                aspectRatio: '9 / 16',
+                borderRadius: 2,
+              }}
+            />
+          ))}
+        </Box>
+      </Box>
+    </Box>
   )
 }
