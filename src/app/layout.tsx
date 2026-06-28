@@ -23,12 +23,6 @@ export default function RootLayout({
   return (
     <html lang="pt">
       <body>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4705848499204860"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
         <Providers>
           <Suspense fallback={null}>
             <ScrollRestoration />
