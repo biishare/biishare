@@ -1,19 +1,20 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { getLoginRedirectPath } from '../constants/features'
 import type { AuthUser } from './auth.service'
 
 export async function getRequiredServerUser(): Promise<AuthUser> {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
   if (!apiBaseUrl) {
-    redirect('/login')
+    redirect(getLoginRedirectPath())
   }
 
   const cookieHeader = cookies().toString()
 
   if (!cookieHeader) {
-    redirect('/login')
+    redirect(getLoginRedirectPath())
   }
 
   let response: Response
@@ -26,11 +27,11 @@ export async function getRequiredServerUser(): Promise<AuthUser> {
       },
     })
   } catch {
-    redirect('/login')
+    redirect(getLoginRedirectPath())
   }
 
   if (!response.ok) {
-    redirect('/login')
+    redirect(getLoginRedirectPath())
   }
 
   const data = (await response.json()) as { user: AuthUser }

@@ -28,6 +28,7 @@ import {
   loginUser,
   saveAuthSession,
 } from '../../../services/auth.service'
+import { getPostAuthRedirectPath } from '../../../constants/features'
 import { IconGoogle } from '../IconGoogle/IconGoogle'
 import Benefit from './Benefit'
 
@@ -53,7 +54,7 @@ export default function LoginForm() {
       saveAuthSession(session)
       setSubmittedEmail(session.user.email)
       reset()
-      router.push(session.user.username ? `/profile/${session.user.username}` : '/profile')
+      router.push(getPostAuthRedirectPath(session.user.username))
     } catch (error) {
       setSubmitError(
         getApiErrorMessage(error, 'Nao foi possivel iniciar sessao.')
@@ -119,8 +120,8 @@ export default function LoginForm() {
                 maxWidth: 560,
               }}
             >
-              Aceda aos seus conteudos guardados, acompanhe o progresso, use os
-              pontos acumulados e continue a explorar toques educativos.
+              Continue a explorar toques educativos, descubra conteudos novos
+              e acompanhe as publicacoes da comunidade.
             </Typography>
 
             <Box

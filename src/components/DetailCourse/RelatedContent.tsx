@@ -13,11 +13,13 @@ interface Props {
 }
 
 export default function RelatedContent({ post }: Props) {
+  const primarySubjectId = post.subjectIds?.[0] ?? post.subjectId;
+
   const { data } = useQuery({
-    queryKey: ["related-posts", post._id, post.subjectId, post.level],
+    queryKey: ["related-posts", post._id, primarySubjectId, post.level],
     queryFn: () =>
       getPosts({
-        subjectId: post.subjectId,
+        subjectId: primarySubjectId,
         level: post.level,
         page: 1,
         limit: 5,
@@ -34,7 +36,7 @@ export default function RelatedContent({ post }: Props) {
     return (
       <Box mt={5}>
         <ToqueRow
-          area={post.subjectId}
+          area={primarySubjectId}
           page={1}
           limit={5}
           title="Toques relacionados"
@@ -46,7 +48,7 @@ export default function RelatedContent({ post }: Props) {
   return (
     <Box mt={5}>
       <ToqueRow
-        area={post.subjectId}
+        area={primarySubjectId}
         page={1}
         limit={5}
         title="Toques relacionados"

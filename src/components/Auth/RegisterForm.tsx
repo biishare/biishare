@@ -39,6 +39,7 @@ import {
   registerUser,
   saveAuthSession,
 } from '../../../services/auth.service'
+import { getPostAuthRedirectPath } from '../../../constants/features'
 import { IconGoogle } from '../IconGoogle/IconGoogle'
 import Benefit from './Benefit'
 
@@ -127,7 +128,7 @@ export default function RegisterForm() {
       setSubmittedName(session.user.name)
       reset()
       setAcceptedTerms(false)
-      router.push(session.user.username ? `/profile/${session.user.username}` : '/profile')
+      router.push(getPostAuthRedirectPath(session.user.username))
     } catch (error) {
       setSubmitError(
         getApiErrorMessage(error, 'Nao foi possivel criar a conta.')

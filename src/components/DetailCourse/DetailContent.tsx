@@ -13,11 +13,11 @@ import { Maximize2 } from "lucide-react";
 
 import { PostDTO } from "../../../types/post";
 import { ContentPlaylist } from "./ContentPlayList";
-import { SUBJECTS } from "../../../constants/subjects";
 import { FullscreenPdfViewer } from "../Modal/PdfImageViewer";
 import { PdfImageViewer } from "../Document/PdfImageViewer";
 import VideoPlay from "../VideoPlay/VideoPlay";
 import RelatedContent from "./RelatedContent";
+import { getLevelLabel, getSubjectLabels } from "../../../utils/labels";
 
 interface DetailContentProps {
   post: PostDTO;
@@ -36,8 +36,7 @@ export default function DetailContent({ post }: DetailContentProps) {
 
   const activeItem = list[activeIndex];
 
-  const subjectLabel =
-    SUBJECTS.find(s => s.id === post.subjectId)?.label ?? post.subjectId;
+  const subjectLabel = getSubjectLabels(post.subjectIds, post.subjectId);
 
   if (!activeItem) {
     return <Typography>Nenhum conteúdo disponível</Typography>;
@@ -121,13 +120,16 @@ export default function DetailContent({ post }: DetailContentProps) {
 
             <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
               <Chip label={subjectLabel} size="small" />
-              <Chip label={post.level} size="small" />
-              <Chip label={post.year} size="small" />
+              <Chip label={getLevelLabel(post.level)} size="small" />
 
               {contentType === "document" && totalPages && (
                 <Chip label={`${totalPages} páginas`} size="small" />
               )}
             </Stack>
+
+            <Typography color="text.secondary" mt={2}>
+              {post.description}
+            </Typography>
           </Box>
         </Box>
 

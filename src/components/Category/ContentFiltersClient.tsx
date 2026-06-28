@@ -77,13 +77,6 @@ export default function ContentFiltersClient() {
         color={get("level") ? "warning" : "default"}
       />
 
-      {/* YEAR */}
-      <Chip
-        label={get("year") || "Todos os anos"}
-        onClick={(e) => openPopover(e, "year")}
-        color={get("year") ? "warning" : "default"}
-      />
-
       {/* SUBJECT */}
       <Chip
         label={
@@ -126,19 +119,6 @@ export default function ContentFiltersClient() {
                 }}
               >
                 {l ? LEVEL_LABEL_MAP[l] : "Todos"}
-              </Button>
-            ))}
-
-          {popoverType === "year" &&
-            ["", ...filters.years].map((y) => (
-              <Button
-                key={y || "all"}
-                onClick={() => {
-                  updateQuery("year", String(y))
-                  closePopover()
-                }}
-              >
-                {y || "Todos"}
               </Button>
             ))}
 

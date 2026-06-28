@@ -7,17 +7,24 @@ import { Tooltip } from '@mui/material'
 import { UserCircle, Zap } from 'lucide-react'
 
 import { AuthUser, getAuthSession } from '../../../services/auth.service'
+import { PROFILE_PAGE_AVAILABLE } from '../../../constants/features'
 
 export default function Header({
   initialUser,
 }: {
   initialUser?: AuthUser | null
 }) {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(initialUser ?? null)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(
+    PROFILE_PAGE_AVAILABLE ? initialUser ?? null : null
+  )
   const profileHref = authUser?.username ? `/profile/${authUser.username}` : '/profile'
   const profileTooltip = authUser?.name || 'Perfil'
 
   useEffect(() => {
+    if (!PROFILE_PAGE_AVAILABLE) {
+      return
+    }
+
     if (initialUser !== undefined) {
       setAuthUser(initialUser)
       return
@@ -61,24 +68,26 @@ export default function Header({
         </Link>
 
         <StackActions>
-          <Tooltip title={profileTooltip}>
-            <Link
-              href={profileHref}
-              aria-label={profileTooltip}
-              className="grid h-[42px] w-[42px] shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white text-orange-500 no-underline transition hover:border-orange-200 hover:bg-orange-50"
-            >
-              {authUser?.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={authUser.avatarUrl}
-                  alt={authUser.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <UserCircle size={22} />
-              )}
-            </Link>
-          </Tooltip>
+          {PROFILE_PAGE_AVAILABLE && (
+            <Tooltip title={profileTooltip}>
+              <Link
+                href={profileHref}
+                aria-label={profileTooltip}
+                className="grid h-[42px] w-[42px] shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white text-orange-500 no-underline transition hover:border-orange-200 hover:bg-orange-50"
+              >
+                {authUser?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={authUser.avatarUrl}
+                    alt={authUser.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <UserCircle size={22} />
+                )}
+              </Link>
+            </Tooltip>
+          )}
 
           <Link
             href="/toque"
@@ -98,7 +107,7 @@ export default function Header({
 
 function StackActions({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-[42px] w-[94px] shrink-0 items-center justify-end gap-2 sm:w-[208px]">
+    <div className="flex h-[42px] shrink-0 items-center justify-end gap-2">
       {children}
     </div>
   )

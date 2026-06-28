@@ -6,7 +6,6 @@ import { PostDTO, PostFiltersResponse } from "../types/post";
 export type GetPostsParams = {
   subjectId?: string;
   level?: string;
-  year?: number;
   contentType?: "video" | "document";
   page?: number;
   limit?: number;

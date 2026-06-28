@@ -38,6 +38,7 @@ import {
   logoutUser,
   saveAuthUser,
 } from '../../../services/auth.service'
+import { getLoginRedirectPath } from '../../../constants/features'
 import ProfileImageUploader from './ProfileImageUploader'
 
 type ProfileSection = 'saved' | 'history' | 'rewards'
@@ -257,7 +258,7 @@ export default function ProfileClient({
       })
       .catch(() => {
         clearAuthSession()
-        router.replace('/login')
+        router.replace(getLoginRedirectPath())
       })
       .finally(() => setIsCheckingSession(false))
   }, [expectedUsername, initialUser, redirectToUsername, router])
@@ -318,7 +319,7 @@ export default function ProfileClient({
       .finally(() => {
         clearAuthSession()
         setAuthUser(null)
-        router.replace('/login')
+        router.replace(getLoginRedirectPath())
         router.refresh()
       })
   }

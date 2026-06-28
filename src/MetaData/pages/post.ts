@@ -43,6 +43,7 @@ export async function generateMetadata({
     post.imageLink || DEFAULT_OG_IMAGE
 
   const description =
+    post.description ||
     post.title ||
     'Leia este conteúdo na Biishare'
 

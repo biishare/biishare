@@ -10,9 +10,10 @@ export type MediaItem = {
 
 export type PostDTO = {
   _id: string;
-  subjectId: string;
+  subjectId?: string;
+  subjectIds: string[];
   title: string;
-  year: number;
+  description: string;
   level: string;
   contentType: "video" | "document";
   imageLink: string;
@@ -29,6 +30,5 @@ export type PostDTO = {
 export type PostFiltersResponse = {
   subjects: string[];
   levels: string[];
-  years: number[];
   contentTypes: ("video" | "document")[];
 };

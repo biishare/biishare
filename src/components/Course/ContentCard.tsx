@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Box, Paper, Typography } from '@mui/material'
 import { PlayCircle, FileText } from 'lucide-react'
 import { PostDTO } from '../../../types/post'
-import { getSubjectLabel, getContentTypeLabel, getLevelLabel } from '../../../utils/labels'
+import { getSubjectLabels, getLevelLabel } from '../../../utils/labels'
 import { getCloudinaryBlur } from '../../../utils/Post/CloudinaryBlur'
 
 interface Props {
@@ -121,7 +121,21 @@ export default function ContentCard({ post }: Props) {
               textOverflow: 'ellipsis',
             }}
           >
-            {getSubjectLabel(post.subjectId)} • {post.year} • {getLevelLabel(post.level)}
+            {getSubjectLabels(post.subjectIds, post.subjectId)} • {getLevelLabel(post.level)}
+          </Typography>
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontSize: 13,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {post.description}
           </Typography>
 
           {/* TIPO (MENOS REDUNDANTE) */}

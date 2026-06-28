@@ -3,10 +3,10 @@
 import React, { useMemo } from 'react'
 import {
   Box,
-  ThemeProvider,
-  Typography,
   Button,
   CircularProgress,
+  ThemeProvider,
+  Typography,
 } from '@mui/material'
 import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -25,16 +25,13 @@ const LIMIT = 10
 export default function ContentList() {
   const searchParams = useSearchParams()
 
-  // filtros
   const subjectId = searchParams.get('subjectId') || undefined
   const level = searchParams.get('level') || undefined
-  const year = searchParams.get('year')
   const contentType = searchParams.get('contentType') as
     | 'video'
     | 'document'
     | undefined
 
-  // 🚀 REACT QUERY (CACHE REAL)
   const {
     data,
     fetchNextPage,
@@ -42,20 +39,19 @@ export default function ContentList() {
     isLoading,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['posts', { subjectId, level, contentType, year }],
+    queryKey: ['posts', { subjectId, level, contentType }],
 
     queryFn: async ({ pageParam }) => {
       return getPosts({
         subjectId,
         level,
         contentType,
-        year: year ? Number(year) : undefined,
         page: pageParam,
         limit: LIMIT,
       })
     },
 
-    initialPageParam: 1, // 🔥 ESSENCIAL (faltava isso)
+    initialPageParam: 1,
 
     getNextPageParam: (lastPage, allPages) => {
       const total = lastPage.total ?? 0
@@ -68,19 +64,16 @@ export default function ContentList() {
     placeholderData: (prev) => prev,
   })
 
-  // 🔄 junta todas páginas
   const posts: PostDTO[] = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data],
   )
 
-  // 📌 feed calculado
   const feed: FeedBlock[] = useMemo(
     () => buildFeed(posts, subjectId),
     [posts, subjectId],
   )
 
-  // ➕ carregar mais
   const handleLoadMore = () => {
     fetchNextPage()
   }
@@ -100,12 +93,10 @@ export default function ContentList() {
           alignItems: 'stretch',
         }}
       >
-        {/* skeleton inicial */}
         {isLoading && posts.length === 0 && (
           <ContentCardSkeleton count={8} />
         )}
 
-        {/* feed */}
         {feed.map((block, index) => {
           if (block.type === 'content') {
             return block.items.map((post) => (
@@ -127,7 +118,6 @@ export default function ContentList() {
           )
         })}
 
-        {/* loader ao carregar mais */}
         {isFetchingNextPage && (
           <Box
             gridColumn="1 / -1"
@@ -139,7 +129,6 @@ export default function ContentList() {
           </Box>
         )}
 
-        {/* botão carregar mais */}
         {!isLoading && hasNextPage && posts.length > 0 && (
           <Box
             gridColumn="1 / -1"
@@ -173,11 +162,10 @@ export default function ContentList() {
           </Box>
         )}
 
-        {/* vazio */}
         {!isLoading && posts.length === 0 && (
           <Box gridColumn="1 / -1" textAlign="center" py={8}>
             <Typography color="text.secondary">
-              Nenhum conteúdo encontrado
+              Nenhum conteudo encontrado
             </Typography>
           </Box>
         )}

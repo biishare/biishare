@@ -97,14 +97,6 @@ export default function ContentFilters() {
         sx={getChipStyle(!!getFilterValue("level"))}
       />
 
-      {/* ANO */}
-      <Chip
-        label={getFilterValue("year") || "Todos os anos"}
-        onClick={(e) => openPopover(e, "year")}
-        clickable
-        sx={getChipStyle(!!getFilterValue("year"))}
-      />
-
       {/* DISCIPLINA */}
       <Chip
         label={
@@ -166,26 +158,6 @@ export default function ContentFilters() {
                 {level
                   ? LEVEL_LABEL_MAP[level]
                   : "Todos os níveis"}
-              </Button>
-            ))}
-
-          {/* YEAR */}
-          {popoverType === "year" &&
-            ["", ...filters.years].map((year) => (
-              <Button
-                key={year || "all"}
-                variant={
-                  getFilterValue("year") === String(year)
-                    ? "contained"
-                    : "outlined"
-                }
-                color="warning"
-                onClick={() => {
-                  updateQuery("year", String(year));
-                  closePopover();
-                }}
-              >
-                {year || "Todos os anos"}
               </Button>
             ))}
 
