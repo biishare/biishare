@@ -145,16 +145,6 @@ export default function DetailContent({ post }: DetailContentProps) {
               >
                 {post.description}
               </Typography>
-
-              {post.description?.length > 120 && (
-                <Button
-                  size="small"
-                  onClick={() => setExpanded(v => !v)}
-                  sx={{ mt: 0.5, textTransform: "none" }}
-                >
-                  {expanded ? "Mostrar menos" : "Mostrar mais"}
-                </Button>
-              )}
             </Box>
           </Box>
         </Box>
