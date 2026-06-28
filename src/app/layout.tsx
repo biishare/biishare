@@ -6,6 +6,7 @@ import { GA_ID } from '../../lib/analytics'
 import AnalyticsTracker from '@/components/AnalyticsTracker/AnalyticsTracker'
 import ScrollRestoration from '@/components/ScrollRestoration/ScrollRestoration'
 import { createMetadata } from '@/MetaData/baseMetadata'
+import AdSense from '@/components/Adsense/Adsense'
 
 interface Props {
   children: React.ReactNode
@@ -22,6 +23,9 @@ export default function RootLayout({
 }: Props) {
   return (
     <html lang="pt">
+      <head>
+        <AdSense pId="4705848499204860" />
+      </head>
       <body>
         <Providers>
           <Suspense fallback={null}>
@@ -48,14 +52,6 @@ export default function RootLayout({
             gtag('config', '${GA_ID}');
           `}
         </Script>
-
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4705848499204860"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-
         {/* Analytics (sem Suspense) */}
         <AnalyticsTracker />
       </body>
