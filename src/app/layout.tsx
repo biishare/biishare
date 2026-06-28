@@ -49,6 +49,13 @@ export default function RootLayout({
           `}
         </Script>
 
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4705848499204860"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+
         {/* Analytics (sem Suspense) */}
         <AnalyticsTracker />
       </body>
