@@ -33,6 +33,7 @@ export default function DetailContent({ post }: DetailContentProps) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [openFullscreen, setOpenFullscreen] = useState(false);
+  const [expanded, setExpanded] = useState(false)
 
   const activeItem = list[activeIndex];
 
@@ -78,7 +79,7 @@ export default function DetailContent({ post }: DetailContentProps) {
                   url={activeItem.url}
                   poster=""
                   blurDataURL=""
-                  markVideoAsCompleted={() => {}}
+                  markVideoAsCompleted={() => { }}
                 />
               </Box>
             ) : (
@@ -127,9 +128,34 @@ export default function DetailContent({ post }: DetailContentProps) {
               )}
             </Stack>
 
-            <Typography color="text.secondary" mt={2}>
-              {post.description}
-            </Typography>
+            <Box mt={2}>
+              <Typography
+                color="text.secondary"
+                sx={{
+                  lineHeight: 1.5,
+                  opacity: 0.9,
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: expanded ? "unset" : 2,
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={() => setExpanded(v => !v)}
+              >
+                {post.description}
+              </Typography>
+
+              {post.description?.length > 120 && (
+                <Button
+                  size="small"
+                  onClick={() => setExpanded(v => !v)}
+                  sx={{ mt: 0.5, textTransform: "none" }}
+                >
+                  {expanded ? "Mostrar menos" : "Mostrar mais"}
+                </Button>
+              )}
+            </Box>
           </Box>
         </Box>
 

@@ -22,7 +22,19 @@ export default function RootLayout({
 }: Props) {
   return (
     <html lang="pt">
+      <head>
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-4705848499204860"
+        />
+      </head>
       <body>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4705848499204860"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <Providers>
           <Suspense fallback={null}>
             <ScrollRestoration />
