@@ -6,20 +6,15 @@ import {
     Typography,
     Paper,
     Stack,
-    IconButton,
     Accordion,
     AccordionSummary,
     AccordionDetails,
 } from '@mui/material'
 
-import { ChevronDown, Home } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-
+import { ChevronDown } from 'lucide-react'
 
 
 export default function FaqPage() {
-    const router = useRouter()
-
     const faqs = [
         {
             q: 'O que é a Biishare?',
@@ -124,28 +119,6 @@ export default function FaqPage() {
                         ))}
                     </Stack>
                 </Paper>
-
-                {/* HOME BUTTON */}
-                <IconButton
-                    aria-label="Ir para página inicial"
-                    onClick={() => router.push('/')}
-                    sx={{
-                        position: 'fixed',
-                        bottom: 24,
-                        right: 24,
-                        backgroundColor: '#FF7A00',
-                        color: '#fff',
-                        width: 56,
-                        height: 56,
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-                        '&:hover': {
-                            backgroundColor: '#e66a00',
-                        },
-                    }}
-                >
-                    <Home size={22} />
-                </IconButton>
-
             </Container>
         </Box>
     )

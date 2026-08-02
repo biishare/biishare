@@ -1,0 +1,23 @@
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:14976:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async getVersionInfo (E:\Marques\biishare\node_modules\next\dist\server\dev\hot-reloader-webpack.js:215:21)
+    at async Span.traceAsyncFn (E:\Marques\biishare\node_modules\next\dist\trace\trace.js:154:20)
+    at async HotReloaderWebpack.start (E:\Marques\biishare\node_modules\next\dist\server\dev\hot-reloader-webpack.js:607:28)
+    at async startWatcher (E:\Marques\biishare\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js:156:5)
+    at async setupDevBundler (E:\Marques\biishare\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js:775:20)
+    at async Span.traceAsyncFn (E:\Marques\biishare\node_modules\next\dist\trace\trace.js:154:20)
+    at async initialize (E:\Marques\biishare\node_modules\next\dist\server\lib\router-server.js:78:30)
+    at async Server.<anonymous> (E:\Marques\biishare\node_modules\next\dist\server\lib\start-server.js:249:36) {
+  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 104.16.7.34:443, 104.16.0.34:443, 104.16.2.34:443, 104.16.1.34:443, 104.16.11.34:443, 104.16.4.34:443, 104.16.8.34:443, 104.16.3.34:443, 104.16.6.34:443, 104.16.9.34:443, 104.16.10.34:443, 104.16.5.34:443, timeout: 10000ms)
+      at onConnectTimeout (node:internal/deps/undici/undici:2746:28)
+      at Immediate._onImmediate (node:internal/deps/undici/undici:2712:35)
+      at process.processImmediate (node:internal/timers:484:21) {
+    code: 'UND_ERR_CONNECT_TIMEOUT',
+    [Symbol(undici.error.UND_ERR)]: true,
+    [Symbol(undici.error.UND_ERR_CONNECT_TIMEOUT)]: true
+  }
+}
+Warning: Reverting webpack devtool to 'eval-source-map'.
+Changing the webpack devtool in development mode will cause severe performance regressions.
+Read more: https://nextjs.org/docs/messages/improper-devtool

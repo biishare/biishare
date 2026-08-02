@@ -1,33 +1,35 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import {
   Alert,
   Avatar,
   Box,
   Button,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  LinearProgress,
+  Checkbox,
+  CircularProgress,
+  FormControlLabel,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material'
 import {
-  Bell,
+  ArrowLeft,
   Bookmark,
-  CheckCircle2,
   Clock3,
-  Coins,
-  Gift,
+  FileCheck2,
+  FileImage,
+  GraduationCap,
   LogOut,
-  RotateCcw,
-  Star,
+  Send,
+  ShieldCheck,
+  Upload,
 } from 'lucide-react'
 
 import {
@@ -39,148 +41,37 @@ import {
   saveAuthUser,
 } from '../../../services/auth.service'
 import { getLoginRedirectPath } from '../../../constants/features'
+import { getSavedPosts } from '../../../services/post.service'
+import { getSavedToques } from '../../../services/short.service'
+import { getContentTypeLabel, getLevelLabel, getSubjectLabels } from '../../../utils/labels'
+import { getCloudinaryBlur } from '../../../utils/Post/CloudinaryBlur'
 import ProfileImageUploader from './ProfileImageUploader'
+import SavePostButton from '../Post/SavePostButton'
+import SaveToqueButton from '../Toque/SaveToqueButton'
+import { ToquesCard } from '../Toque/Toques'
 
-type ProfileSection = 'saved' | 'history' | 'rewards'
+type ProfileSection = 'saved' | 'creator'
 
-type SavedPost = {
-  id: string
-  title: string
-  subject: string
-  type: 'Video' | 'Documento'
-  savedAt: string
-  progress: number
+type CreatorApplicationRecord = {
+  workDescription: string
+  publicName: string
+  verificationCode: string
+  verificationPhotoName: string
+  submittedAt: string
+  status: 'pending'
 }
-
-type PointsEvent = {
-  id: string
-  label: string
-  source: string
-  points: number
-  date: string
-}
-
-type Reward = {
-  id: string
-  title: string
-  amount: string
-  cost: number
-  available: boolean
-}
-
-type Redemption = {
-  id: string
-  rewardTitle: string
-  amount: string
-  cost: number
-  code: string
-  requestedAt: string
-  status: 'pending' | 'used'
-}
-
-const DAILY_QUESTION_LIMIT = 20
-const RESET_QUESTION_LIMIT_COST = 150
-const INITIAL_POINTS = 0
-
-const savedPosts: SavedPost[] = [
-  {
-    id: '1',
-    title: 'Introducao a funcoes matematicas',
-    subject: 'Matematica',
-    type: 'Video',
-    savedAt: 'Hoje',
-    progress: 72,
-  },
-  {
-    id: '2',
-    title: 'Resumo de biologia celular',
-    subject: 'Biologia',
-    type: 'Documento',
-    savedAt: 'Ontem',
-    progress: 38,
-  },
-  {
-    id: '3',
-    title: 'Interpretacao de texto',
-    subject: 'Portugues',
-    type: 'Documento',
-    savedAt: '28 maio',
-    progress: 100,
-  },
-]
-
-const pointsHistory: PointsEvent[] = [
-  {
-    id: 'p1',
-    label: 'Resposta correta',
-    source: 'Perguntas de Matematica',
-    points: 25,
-    date: 'Hoje, 10:42',
-  },
-  {
-    id: 'p2',
-    label: 'Sequencia de 5 acertos',
-    source: 'Bonus diario',
-    points: 40,
-    date: 'Hoje, 10:38',
-  },
-  {
-    id: 'p3',
-    label: 'Resposta errada',
-    source: 'Perguntas de Quimica',
-    points: -5,
-    date: 'Ontem, 19:10',
-  },
-]
-
-const rewards: Reward[] = [
-  {
-    id: 'r1',
-    title: 'Saldo movel',
-    amount: '500 Kz',
-    cost: 400,
-    available: true,
-  },
-  {
-    id: 'r2',
-    title: 'Dinheiro',
-    amount: '1.000 Kz',
-    cost: 750,
-    available: true,
-  },
-  {
-    id: 'r3',
-    title: 'Dinheiro',
-    amount: '2.500 Kz',
-    cost: 1600,
-    available: false,
-  },
-]
 
 const sectionCards = [
   {
     id: 'saved' as const,
-    title: 'Posts Guardados',
-    description: 'Ver todos os posts que guardou para mais tarde',
+    title: 'Guardados',
     icon: Bookmark,
-  },
-  {
-    id: 'history' as const,
-    title: 'Historico de Pontos',
-    description: 'Veja como ganhou e usou seus pontos',
-    icon: Clock3,
-  },
-  {
-    id: 'rewards' as const,
-    title: 'Recompensas',
-    description: 'Troque seus pontos por recompensas incriveis',
-    icon: Gift,
   },
 ]
 
-function createRedemptionCode(rewardId: string) {
+function createCreatorVerificationCode() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase()
-  return `BII-${rewardId.toUpperCase()}-${Date.now().toString().slice(-5)}-${random}`
+  return `BII-${random.slice(0, 3)}-${random.slice(3)}`
 }
 
 export default function ProfileClient({
@@ -196,30 +87,6 @@ export default function ProfileClient({
   const [authUser, setAuthUser] = useState<AuthUser | null>(initialUser ?? null)
   const [isCheckingSession, setIsCheckingSession] = useState(!initialUser)
   const [activeSection, setActiveSection] = useState<ProfileSection>('saved')
-  const [selectedRewardId, setSelectedRewardId] = useState(rewards[1].id)
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [resetLimitOpen, setResetLimitOpen] = useState(false)
-  const [successOpen, setSuccessOpen] = useState(false)
-  const [availablePoints, setAvailablePoints] = useState(INITIAL_POINTS)
-  const [usedPoints, setUsedPoints] = useState(0)
-  const [answeredToday, setAnsweredToday] = useState(DAILY_QUESTION_LIMIT)
-  const [lastRedemption, setLastRedemption] = useState<Redemption | null>(null)
-  const [redemptions, setRedemptions] = useState<Redemption[]>([
-    {
-      id: 'demo-used',
-      rewardTitle: 'Saldo movel',
-      amount: '500 Kz',
-      cost: 400,
-      code: 'BII-R1-10422-AX91KQ',
-      requestedAt: '31 maio, 14:20',
-      status: 'used',
-    },
-  ])
-
-  const selectedReward = useMemo(
-    () => rewards.find((reward) => reward.id === selectedRewardId) ?? rewards[0],
-    [selectedRewardId],
-  )
 
   useEffect(() => {
     const redirectToCanonicalProfile = (user: AuthUser) => {
@@ -263,56 +130,6 @@ export default function ProfileClient({
       .finally(() => setIsCheckingSession(false))
   }, [expectedUsername, initialUser, redirectToUsername, router])
 
-  const canRedeem = selectedReward.available && availablePoints >= selectedReward.cost
-  const remainingQuestions = Math.max(DAILY_QUESTION_LIMIT - answeredToday, 0)
-  const canResetQuestionLimit =
-    remainingQuestions === 0 && availablePoints >= RESET_QUESTION_LIMIT_COST
-  const totalEarned = availablePoints + usedPoints
-
-  const handleRedeem = () => {
-    if (!canRedeem) return
-
-    setConfirmOpen(true)
-  }
-
-  const confirmRedeem = () => {
-    const redemption: Redemption = {
-      id: crypto.randomUUID(),
-      rewardTitle: selectedReward.title,
-      amount: selectedReward.amount,
-      cost: selectedReward.cost,
-      code: createRedemptionCode(selectedReward.id),
-      requestedAt: 'Agora',
-      status: 'pending',
-    }
-
-    setRedemptions((current) => [redemption, ...current])
-    setAvailablePoints((current) => current - selectedReward.cost)
-    setUsedPoints((current) => current + selectedReward.cost)
-    setLastRedemption(redemption)
-    setConfirmOpen(false)
-    setSuccessOpen(true)
-  }
-
-  const resetQuestionLimit = () => {
-    if (!canResetQuestionLimit) return
-
-    setAvailablePoints((current) => current - RESET_QUESTION_LIMIT_COST)
-    setUsedPoints((current) => current + RESET_QUESTION_LIMIT_COST)
-    setAnsweredToday(0)
-    setResetLimitOpen(false)
-  }
-
-  const markAsUsed = (redemptionId: string) => {
-    setRedemptions((current) =>
-      current.map((redemption) =>
-        redemption.id === redemptionId
-          ? { ...redemption, status: 'used' }
-          : redemption,
-      ),
-    )
-  }
-
   const handleLogout = () => {
     logoutUser()
       .catch(() => undefined)
@@ -350,7 +167,7 @@ export default function ProfileClient({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, .92fr) minmax(360px, 1.08fr)' },
+          gridTemplateColumns: '1fr',
           gap: { xs: 1.5, lg: 2 },
           alignItems: 'stretch',
         }}
@@ -362,41 +179,33 @@ export default function ProfileClient({
           name={authUser.name}
           onLogout={handleLogout}
           onUserUpdated={setAuthUser}
-          points={availablePoints}
           username={authUser.username}
         />
-
-        <QuickSummary
-          answeredToday={answeredToday}
-          availablePoints={availablePoints}
-          canResetQuestionLimit={canResetQuestionLimit}
-          onOpenResetLimit={() => setResetLimitOpen(true)}
-          remainingQuestions={remainingQuestions}
-          totalEarned={totalEarned}
-          usedPoints={usedPoints}
-        />
       </Box>
 
-      <Box
-        sx={{
-          mt: 2,
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: { xs: 1, md: 1.2 },
-        }}
-      >
-        {sectionCards.map((card) => (
-          <SectionCard
-            key={card.id}
-            active={activeSection === card.id}
-            description={card.description}
-            icon={card.icon}
-            title={card.title}
-            onClick={() => setActiveSection(card.id)}
-          />
-        ))}
-      </Box>
+      {activeSection !== 'creator' && (
+        <>
 
+          <Box
+            sx={{
+              mt: 2,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'minmax(260px, 360px)' },
+              gap: { xs: 1, md: 1.2 },
+            }}
+          >
+            {sectionCards.map((card) => (
+              <SectionCard
+                key={card.id}
+                active={activeSection === card.id}
+                icon={card.icon}
+                title={card.title}
+                onClick={() => setActiveSection(card.id)}
+              />
+            ))}
+          </Box>
+        </>
+      )}
       <Paper
         elevation={0}
         sx={{
@@ -408,138 +217,10 @@ export default function ProfileClient({
         }}
       >
         {activeSection === 'saved' && <SavedPosts />}
-        {activeSection === 'history' && <PointsHistory />}
-        {activeSection === 'rewards' && (
-          <Rewards
-            availablePoints={availablePoints}
-            selectedRewardId={selectedRewardId}
-            redemptions={redemptions}
-            onMarkAsUsed={markAsUsed}
-            onRedeem={handleRedeem}
-            onSelect={setSelectedRewardId}
-          />
+        {activeSection === 'creator' && (
+          <CreatorApplicationDemo authUser={authUser} onBack={() => setActiveSection('saved')} />
         )}
       </Paper>
-
-      <Dialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 900 }}>Confirmar resgate</DialogTitle>
-        <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Depois de confirmar, sera criado um registo pendente para o admin
-            validar e enviar a recompensa.
-          </Alert>
-
-          <Stack spacing={1.2}>
-            <InfoRow label="Recompensa" value={selectedReward.title} />
-            <InfoRow label="Valor" value={selectedReward.amount} />
-            <InfoRow label="Custo" value={`${selectedReward.cost} pontos`} />
-            <InfoRow
-              label="Pontos depois"
-              value={`${availablePoints - selectedReward.cost} pontos`}
-            />
-            <InfoRow label="Estado inicial" value="Pendente" />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setConfirmOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            onClick={confirmRedeem}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg,#f59e0b,#f97316)',
-            }}
-          >
-            Confirmar resgate
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={resetLimitOpen}
-        onClose={() => setResetLimitOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 900 }}>Restabelecer limite diario</DialogTitle>
-        <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Ao confirmar, o limite de perguntas de hoje volta a ficar disponivel e
-            serao descontados {RESET_QUESTION_LIMIT_COST} pontos.
-          </Alert>
-
-          <Stack spacing={1.2}>
-            <InfoRow label="Limite diario" value={`${DAILY_QUESTION_LIMIT} perguntas`} />
-            <InfoRow label="Respondidas hoje" value={`${answeredToday} perguntas`} />
-            <InfoRow label="Custo" value={`${RESET_QUESTION_LIMIT_COST} pontos`} />
-            <InfoRow
-              label="Pontos depois"
-              value={`${availablePoints - RESET_QUESTION_LIMIT_COST} pontos`}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setResetLimitOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            disabled={!canResetQuestionLimit}
-            onClick={resetQuestionLimit}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg,#f59e0b,#f97316)',
-            }}
-          >
-            Restabelecer limite
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={successOpen} onClose={() => setSuccessOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 900 }}>Resgate registado</DialogTitle>
-        <DialogContent>
-          <Alert icon={<Bell size={18} />} severity="success" sx={{ mb: 2 }}>
-            O admin recebera uma notificacao com este pedido.
-          </Alert>
-
-          <Typography color="text.secondary" mb={1}>
-            Codigo unico
-          </Typography>
-
-          <Paper
-            elevation={0}
-            sx={{
-              border: '1px dashed #fdba74',
-              background: '#fffaf3',
-              borderRadius: 2,
-              p: 2,
-            }}
-          >
-            <Typography fontWeight={900} sx={{ wordBreak: 'break-all' }}>
-              {lastRedemption?.code}
-            </Typography>
-          </Paper>
-
-          <Typography mt={2} fontSize={14} color="text.secondary">
-            Estado: pendente ate o admin confirmar o envio.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setSuccessOpen(false)} sx={{ textTransform: 'none' }}>
-            Fechar
-          </Button>
-        </DialogActions>
-      </Dialog>
     </main>
   )
 }
@@ -562,7 +243,6 @@ function ProfileHero({
   name,
   onLogout,
   onUserUpdated,
-  points,
   username,
 }: {
   avatarUrl?: string
@@ -571,7 +251,6 @@ function ProfileHero({
   name: string
   onLogout: () => void
   onUserUpdated: (user: AuthUser) => void
-  points: number
   username?: string
 }) {
   return (
@@ -721,28 +400,6 @@ function ProfileHero({
               mt: 1.8,
             }}
           >
-            <Paper
-              elevation={0}
-              sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1.4,
-              px: 1.4,
-              py: 0.9,
-              borderRadius: 2,
-              border: '1px solid #e5e7eb',
-              background: '#fff',
-              boxShadow: '0 10px 22px rgba(31,41,55,.08)',
-            }}
-            >
-              <Star size={20} fill="#fbbf24" color="#fbbf24" />
-              <Typography fontSize={21} fontWeight={900} color="#111827">
-                {points.toLocaleString('pt-PT')}
-              </Typography>
-              <Typography color="text.secondary" fontSize={13}>
-                pontos
-              </Typography>
-            </Paper>
 
             <Button
               variant="text"
@@ -781,13 +438,11 @@ function ProfileHero({
 
 function SectionCard({
   active,
-  description,
   icon: Icon,
   title,
   onClick,
 }: {
   active: boolean
-  description: string
   icon: typeof Bookmark
   title: string
   onClick: () => void
@@ -800,23 +455,24 @@ function SectionCard({
       sx={{
         minHeight: 74,
         width: '100%',
-        border: active ? '1px solid #fb923c' : '1px solid #e5e7eb',
+        border: active ? '1px solid #fb923c' : '1px solid #dbe3ef',
         borderRadius: 2,
         p: 1.4,
         cursor: 'pointer',
-        background: active ? '#fffaf3' : '#fff',
+        background: active ? '#fff3e6' : '#f8fafc',
         textAlign: 'left',
-        boxShadow: active
-          ? '0 0 0 3px rgba(249,115,22,.08)'
-          : 'none',
         transition: 'all .2s ease',
+        boxShadow: active ? '0 8px 20px rgba(249, 115, 22, .08)' : 'none',
 
         '&:hover': {
           borderColor: '#fdba74',
-          transform: 'translateY(-1px)',
-          boxShadow: active
-            ? '0 12px 24px rgba(31,41,55,.07), 0 0 0 3px rgba(249,115,22,.08)'
-            : '0 12px 24px rgba(31,41,55,.07)',
+          background: active ? '#ffedd5' : '#fff7ed',
+          boxShadow: '0 8px 20px rgba(15, 23, 42, .06)',
+        },
+
+        '&:focus-visible': {
+          outline: '2px solid #fb923c',
+          outlineOffset: 2,
         },
       }}
     >
@@ -829,7 +485,7 @@ function SectionCard({
             placeItems: 'center',
             borderRadius: 2,
             color: active ? '#ea580c' : '#64748b',
-            background: active ? '#ffedd5' : '#f8fafc',
+            background: active ? '#ffedd5' : '#eef2f7',
             flexShrink: 0,
           }}
         >
@@ -843,343 +499,565 @@ function SectionCard({
           <Typography fontWeight={900} fontSize={15} color="#111827" noWrap>
             {title}
           </Typography>
-
-          <Typography color="text.secondary" fontSize={13} lineHeight={1.35} noWrap>
-            {description}
-          </Typography>
         </Box>
       </Stack>
     </Paper>
   )
 }
 
-function QuickSummary({
-  answeredToday,
-  availablePoints,
-  canResetQuestionLimit,
-  onOpenResetLimit,
-  remainingQuestions,
-  totalEarned,
-  usedPoints,
-}: {
-  answeredToday: number
-  availablePoints: number
-  canResetQuestionLimit: boolean
-  onOpenResetLimit: () => void
-  remainingQuestions: number
-  totalEarned: number
-  usedPoints: number
-}) {
-  const limitReached = remainingQuestions === 0
+function SavedPosts() {
+  const {
+    data: savedPostsData,
+    isLoading: isLoadingPosts,
+    isError: isPostsError,
+  } = useQuery({
+    queryKey: ['saved-posts'],
+    queryFn: () => getSavedPosts({ limit: 50 }),
+  })
+  const {
+    data: savedToquesData,
+    isLoading: isLoadingToques,
+    isError: isToquesError,
+  } = useQuery({
+    queryKey: ['saved-toques'],
+    queryFn: () => getSavedToques({ limit: 50 }),
+  })
+
+  const savedItems = savedPostsData?.data ?? []
+  const savedToques = savedToquesData?.data ?? []
+  const isLoading = isLoadingPosts || isLoadingToques
+  const hasError = isPostsError || isToquesError
 
   return (
-    <Box sx={{ display: 'grid', gap: 1.2, height: '100%' }}>
-      <Paper
-        elevation={0}
-        sx={{
-          border: '1px solid #e5e7eb',
-          borderRadius: 2,
-          p: { xs: 1.5, md: 1.8 },
-          background: '#fff',
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.3}>
-          <Box>
-            <Typography fontSize={18} fontWeight={900}>
-              Resumo
-            </Typography>
-            <Typography color="text.secondary" fontSize={13}>
-              Pontos e atividade de hoje
-            </Typography>
-          </Box>
-          <Chip size="small" label="Hoje" sx={{ fontWeight: 800 }} />
+    <Box>
+      <Typography fontSize={22} fontWeight={900}>
+        Guardados
+      </Typography>
+
+      {isLoading && (
+        <Stack alignItems="center" py={5}>
+          <CircularProgress size={28} />
         </Stack>
+      )}
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: { xs: 1, md: 1 },
-          }}
-        >
-          <SummaryItem
-            icon={<Star size={25} fill="#fbbf24" color="#fbbf24" />}
-            label="Pontos disponiveis"
-            value={availablePoints.toLocaleString('pt-PT')}
-          />
-          <SummaryItem
-            icon={<Clock3 size={24} color="#22c55e" />}
-            label="Pontos usados"
-            value={usedPoints.toLocaleString('pt-PT')}
-            bordered
-          />
-          <SummaryItem
-            icon={<CheckCircle2 size={24} color="#22c55e" />}
-            label="Pontos totais ganhos"
-            value={totalEarned.toLocaleString('pt-PT')}
-            bordered
-          />
-        </Box>
-      </Paper>
+      {hasError && (
+        <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+          Nao foi possivel carregar todos os guardados.
+        </Alert>
+      )}
 
-      <Paper
-        elevation={0}
-        sx={{
-          border: limitReached ? '1px solid #fbbf24' : '1px solid #e5e7eb',
-          borderRadius: 2,
-          p: { xs: 1.5, md: 1.8 },
-          background: limitReached ? '#fffbeb' : '#fff',
-        }}
-      >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'center' }}
-          gap={1.5}
-        >
-          <Stack direction="row" alignItems="center" gap={1.4}>
-            <Clock3 size={22} color={limitReached ? '#d97706' : '#f97316'} />
-            <Box>
-              <Typography fontWeight={900} fontSize={15}>
-                Perguntas diarias
-              </Typography>
-              <Typography color="text.secondary" fontSize={14}>
-                {answeredToday}/{DAILY_QUESTION_LIMIT} respondidas hoje
-              </Typography>
-            </Box>
-          </Stack>
+      {!isLoading && !hasError && savedItems.length === 0 && savedToques.length === 0 && (
+        <Paper elevation={0} sx={{ mt: 2, border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
+          <Typography fontWeight={850}>Ainda nao guardaste conteudos.</Typography>
+          <Typography color="text.secondary" fontSize={14} mt={0.5}>
+            Quando guardares posts ou toques, eles vao aparecer aqui.
+          </Typography>
+        </Paper>
+      )}
 
-          <Box sx={{ flex: 1, minWidth: { md: 220 } }}>
-            <LinearProgress
-              variant="determinate"
-              value={(answeredToday / DAILY_QUESTION_LIMIT) * 100}
-              sx={{
-                height: 9,
-                borderRadius: 99,
-                backgroundColor: '#e5e7eb',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: limitReached ? '#f59e0b' : '#f97316',
-                },
-              }}
-            />
-            <Typography mt={0.7} fontSize={13} color="text.secondary">
-              {limitReached
-                ? canResetQuestionLimit
-                  ? `Limite atingido. Use ${RESET_QUESTION_LIMIT_COST} pontos para repor.`
-                  : `Limite atingido. Precisa de ${RESET_QUESTION_LIMIT_COST} pontos para repor.`
-                : `${remainingQuestions} perguntas restantes hoje.`}
-            </Typography>
-          </Box>
+      {savedItems.length > 0 && (
+        <>
+          <Typography fontSize={18} fontWeight={900} mt={2}>
+            Posts
+          </Typography>
 
-          <Button
-            variant={limitReached ? 'contained' : 'outlined'}
-            disabled={!canResetQuestionLimit}
-            onClick={onOpenResetLimit}
-            startIcon={<RotateCcw size={17} />}
+          <Box
             sx={{
-              height: 38,
-              px: 1.6,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 900,
-              whiteSpace: 'nowrap',
-              background: limitReached
-                ? 'linear-gradient(135deg,#f59e0b,#f97316)'
-                : undefined,
+              mt: 1,
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                lg: 'repeat(3, minmax(0, 1fr))',
+              },
+              gap: 1.2,
             }}
           >
-            Restabelecer limite
-          </Button>
-        </Stack>
-      </Paper>
+            {savedItems.map((item) => {
+              const post = item.post
+              const previewImage = post.imageLink || '/opengraph-image.jpg'
+
+              return (
+                <Paper
+                  key={item.id}
+                  elevation={0}
+                  sx={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Link
+                    href={`/content/${post._id}`}
+                    scroll={false}
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                    aria-label={`Abrir conteudo: ${post.title}`}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        aspectRatio: '16 / 9',
+                        width: '100%',
+                        bgcolor: '#e2e8f0',
+                      }}
+                    >
+                      <Image
+                        src={previewImage}
+                        alt={`Previsualizacao de ${post.title}`}
+                        fill
+                        placeholder={post.imageLink ? 'blur' : 'empty'}
+                        blurDataURL={
+                          post.imageLink ? getCloudinaryBlur(post.imageLink) : undefined
+                        }
+                        sizes="(max-width: 900px) 100vw, 33vw"
+                        style={{
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  </Link>
+
+                  <Box sx={{ p: 1.5 }}>
+                    <Stack direction="row" justifyContent="space-between" gap={1} alignItems="center">
+                      <Chip size="small" label={getContentTypeLabel(post.contentType)} />
+                      <Typography fontSize={12} color="text.secondary">
+                        Guardado {formatProfileDate(item.savedAt)}
+                      </Typography>
+                    </Stack>
+
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(0, 1fr) auto',
+                        gap: 0.8,
+                        alignItems: 'start',
+                        mt: 1.2,
+                      }}
+                    >
+                      <Link
+                        href={`/content/${post._id}`}
+                        scroll={false}
+                        style={{
+                          color: 'inherit',
+                          display: 'block',
+                          minWidth: 0,
+                          textDecoration: 'none',
+                        }}
+                        aria-label={`Abrir conteudo: ${post.title}`}
+                      >
+                        <Typography fontWeight={900} fontSize={15} lineHeight={1.35}>
+                          {post.title}
+                        </Typography>
+                      </Link>
+
+                      <SavePostButton
+                        postId={post._id}
+                        title={post.title}
+                        initialSaved
+                        sx={{
+                          width: 34,
+                          height: 34,
+                          mt: -0.6,
+                          flexShrink: 0,
+                          bgcolor: 'transparent',
+                          borderColor: 'transparent',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            bgcolor: '#f1f5f9',
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Typography color="text.secondary" fontSize={14} mt={0.4}>
+                      {getSubjectLabels(post.subjectIds, post.subjectId)} - {getLevelLabel(post.level)}
+                    </Typography>
+
+                    <Typography color="text.secondary" fontSize={12} mt={0.8}>
+                      Publicado {formatProfileDate(post.createdAt)}
+                    </Typography>
+                  </Box>
+                </Paper>
+              )
+            })}
+          </Box>
+        </>
+      )}
+
+      {savedToques.length > 0 && (
+        <>
+          <Typography fontSize={18} fontWeight={900} mt={savedItems.length > 0 ? 3 : 2}>
+            Toques
+          </Typography>
+
+          <Box
+            sx={{
+              mt: 1,
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(3, minmax(0, 1fr))',
+                lg: 'repeat(4, minmax(0, 1fr))',
+              },
+              gap: 1.2,
+            }}
+          >
+            {savedToques.map((item) => {
+              const toque = item.toque
+
+              return (
+                <Paper
+                  key={item.id}
+                  elevation={0}
+                  sx={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Link
+                    href={`/toque/${toque._id}`}
+                    scroll={false}
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                    aria-label={`Abrir toque: ${toque.title}`}
+                  >
+                    <ToquesCard
+                      item={toque}
+                      preload="metadata"
+                      sx={{
+                        borderRadius: 0,
+                      }}
+                    />
+                  </Link>
+
+                  <Box sx={{ p: 1.2 }}>
+                    <Stack direction="row" justifyContent="space-between" gap={1} alignItems="center">
+                      <Chip size="small" label={toque.mediaType === 'video' ? 'Video' : 'Imagem'} />
+                      <Typography fontSize={12} color="text.secondary">
+                        {formatProfileDate(item.savedAt)}
+                      </Typography>
+                    </Stack>
+
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(0, 1fr) auto',
+                        gap: 0.8,
+                        alignItems: 'start',
+                        mt: 1,
+                      }}
+                    >
+                      <Link
+                        href={`/toque/${toque._id}`}
+                        scroll={false}
+                        style={{
+                          color: 'inherit',
+                          display: 'block',
+                          minWidth: 0,
+                          textDecoration: 'none',
+                        }}
+                        aria-label={`Abrir toque: ${toque.title}`}
+                      >
+                        <Typography fontWeight={900} fontSize={14} lineHeight={1.35}>
+                          {toque.title}
+                        </Typography>
+                      </Link>
+
+                      <SaveToqueButton
+                        toqueId={toque._id}
+                        title={toque.title}
+                        initialSaved
+                        iconSize={18}
+                        sx={{
+                          width: 34,
+                          height: 34,
+                          mt: -0.6,
+                          flexShrink: 0,
+                          color: '#f97316',
+                          bgcolor: 'transparent',
+                          borderColor: 'transparent',
+                          boxShadow: 'none',
+                          backdropFilter: 'none',
+                          '&:hover': {
+                            bgcolor: '#fff7ed',
+                          },
+                          '&.Mui-disabled': {
+                            color: '#f97316',
+                            bgcolor: 'transparent',
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Paper>
+              )
+            })}
+          </Box>
+        </>
+      )}
     </Box>
   )
 }
 
-function SummaryItem({
-  bordered,
-  icon,
-  label,
-  value,
-}: {
-  bordered?: boolean
-  icon: React.ReactNode
-  label: string
-  value: string
-}) {
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      justifyContent="center"
-      gap={1.4}
-      sx={{
-        minHeight: 70,
-        border: '1px solid #f1f5f9',
-        borderRadius: 2,
-        p: 1.2,
-        background: '#fff',
-        borderLeft: {
-          xs: 'none',
-          md: bordered ? '1px solid #f1f5f9' : '1px solid #f1f5f9',
-        },
-      }}
-    >
-      {icon}
-      <Box>
-        <Typography fontSize={22} fontWeight={900} lineHeight={1}>
-          {value}
-        </Typography>
-        <Typography color="text.secondary" mt={0.6} fontSize={13}>
-          {label}
-        </Typography>
-      </Box>
-    </Stack>
-  )
+function formatProfileDate(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'recentemente'
+  }
+
+  return new Intl.DateTimeFormat('pt-PT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
 }
 
-function SavedPosts() {
+function CreatorApplicationDemo({
+  authUser,
+  onBack,
+}: {
+  authUser: AuthUser
+  onBack: () => void
+}) {
+  const [application, setApplication] = useState<CreatorApplicationRecord | null>(null)
+  const [verificationCode] = useState(() => createCreatorVerificationCode())
+  const [formValues, setFormValues] = useState({
+    workDescription: '',
+    publicName: authUser.name,
+    consentAccepted: false,
+  })
+  const [files, setFiles] = useState({
+    verificationPhoto: null as File | null,
+  })
+
+  const canSubmit =
+    formValues.workDescription.trim().length >= 3 &&
+    formValues.publicName.trim().length >= 3 &&
+    Boolean(files.verificationPhoto) &&
+    formValues.consentAccepted
+
+  const updateFile = (field: keyof typeof files, file: File | null) => {
+    setFiles((current) => ({ ...current, [field]: file }))
+  }
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!canSubmit || !files.verificationPhoto) {
+      return
+    }
+
+    setApplication({
+      workDescription: formValues.workDescription.trim(),
+      publicName: formValues.publicName.trim(),
+      verificationCode,
+      verificationPhotoName: files.verificationPhoto.name,
+      submittedAt: 'Agora',
+      status: 'pending',
+    })
+  }
+
+  if (application) {
+    return (
+      <Box>
+        <Button
+          type="button"
+          variant="text"
+          size="small"
+          startIcon={<ArrowLeft size={16} />}
+          onClick={onBack}
+          sx={{ mb: 1.2, borderRadius: 1.5, color: '#64748b', textTransform: 'none', fontWeight: 850 }}
+        >
+          Voltar ao perfil
+        </Button>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', md: 'center' }}
+          gap={1.5}
+        >
+          <Typography fontSize={22} fontWeight={900}>
+            Pedido de conta de criador
+          </Typography>
+
+          <Chip
+            icon={<Clock3 size={15} />}
+            label="Em revisao"
+            color="warning"
+            sx={{ fontWeight: 900 }}
+          />
+        </Stack>
+
+        <Box
+          sx={{
+            mt: 2,
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.05fr .95fr' },
+            gap: 1.5,
+          }}
+        >
+          <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 1.6 }}>
+            <Stack direction="row" alignItems="center" gap={1} mb={1.4}>
+              <GraduationCap size={21} color="#f97316" />
+              <Typography fontWeight={900}>Dados do criador</Typography>
+            </Stack>
+
+            <Stack spacing={1.1}>
+              <InfoRow label="Nome publico" value={application.publicName} />
+              <InfoRow label="O que fazes" value={application.workDescription} />
+              <InfoRow label="Estado" value="Pendente" />
+              <InfoRow label="Enviado" value={application.submittedAt} />
+            </Stack>
+          </Paper>
+
+          <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 1.6 }}>
+            <Stack direction="row" alignItems="center" gap={1} mb={1.4}>
+              <ShieldCheck size={21} color="#16a34a" />
+              <Typography fontWeight={900}>Validacao enviada</Typography>
+            </Stack>
+
+            <Stack spacing={1}>
+
+              <DocumentPreview label="Codigo de verificacao" value={application.verificationCode} />
+              <DocumentPreview label="Foto segurando o codigo" value={application.verificationPhotoName} />
+            </Stack>
+          </Paper>
+        </Box>
+
+        <Button
+          variant="outlined"
+          onClick={() => setApplication(null)}
+          sx={{ mt: 2, borderRadius: 2, textTransform: 'none', fontWeight: 900 }}
+        >
+          Editar pedido
+        </Button>
+      </Box>
+    )
+  }
+
   return (
-    <Box>
+    <Box component="form" onSubmit={handleSubmit}>
+      <Button
+        type="button"
+        variant="text"
+        size="small"
+        startIcon={<ArrowLeft size={16} />}
+        onClick={onBack}
+        sx={{ mb: 1.2, borderRadius: 1.5, color: '#64748b', textTransform: 'none', fontWeight: 850 }}
+      >
+        Voltar ao perfil
+      </Button>
       <Typography fontSize={22} fontWeight={900}>
-        Posts guardados
+        Pedido de conta de criador
       </Typography>
 
       <Box
         sx={{
           mt: 2,
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 1.2,
+          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
+          gap: 1.5,
         }}
       >
-        {savedPosts.map((post) => (
-          <Paper
-            key={post.id}
-            elevation={0}
-            sx={{
-              border: '1px solid #e5e7eb',
-              borderRadius: 2,
-              p: 1.5,
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" gap={1}>
-              <Chip size="small" label={post.type} />
-              <Typography fontSize={12} color="text.secondary">
-                {post.savedAt}
-              </Typography>
-            </Stack>
-
-            <Typography mt={1.2} fontWeight={900} fontSize={15} lineHeight={1.35}>
-              {post.title}
-            </Typography>
-
-            <Typography color="text.secondary" fontSize={14} mt={0.4}>
-              {post.subject}
-            </Typography>
-
-            <LinearProgress
-              variant="determinate"
-              value={post.progress}
-              sx={{
-                mt: 1.2,
-                height: 7,
-                borderRadius: 99,
-                backgroundColor: '#e5e7eb',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: '#f97316',
-                },
-              }}
+        <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 1.6 }}>
+          <Stack spacing={1.4}>
+            <TextField
+              label="O que fazes"
+              value={formValues.workDescription}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  workDescription: event.target.value,
+                }))
+              }
+              fullWidth
+              multiline
+              minRows={3}
+              inputProps={{ maxLength: 240 }}
             />
-          </Paper>
-        ))}
-      </Box>
-    </Box>
-  )
-}
 
-function PointsHistory() {
-  return (
-    <Box>
-      <Typography fontSize={22} fontWeight={900}>
-        Historico de pontos
-      </Typography>
+            <TextField
+              label="Nome publico"
+              value={formValues.publicName}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  publicName: event.target.value,
+                }))
+              }
+              fullWidth
+              inputProps={{ maxLength: 100 }}
+            />
 
-      <Stack divider={<Divider />} spacing={0} mt={1}>
-        {pointsHistory.map((event) => (
-          <Stack
-            key={event.id}
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            gap={2}
-            py={1.25}
-          >
-            <Box>
-              <Typography fontWeight={900}>{event.label}</Typography>
-              <Typography color="text.secondary" fontSize={14}>
-                {event.source} - {event.date}
+          </Stack>
+        </Paper>
+
+        <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 1.6 }}>
+          <Stack direction="row" alignItems="center" gap={1} mb={1.2}>
+            <FileCheck2 size={21} color="#f97316" />
+            <Typography fontWeight={900}>Validacao por codigo</Typography>
+          </Stack>
+
+          <Stack spacing={1}>
+            <Box
+              sx={{
+                border: '1px solid #fed7aa',
+                borderRadius: 2,
+                p: 1.2,
+                backgroundColor: '#fff7ed',
+              }}
+            >
+              <Typography color="text.secondary" fontSize={12} fontWeight={800}>
+                Codigo de verificacao Biishare
+              </Typography>
+              <Typography fontSize={22} fontWeight={950} letterSpacing={0} color="#9a3412">
+                {verificationCode}
+              </Typography>
+              <Typography color="text.secondary" fontSize={12} lineHeight={1.45}>
+                Escreva o codigo em papel e envie uma foto segurando-o com as maos.
               </Typography>
             </Box>
 
-            <Typography
-              fontWeight={900}
-              color={event.points >= 0 ? '#16a34a' : '#dc2626'}
-              whiteSpace="nowrap"
-            >
-              {event.points > 0 ? '+' : ''}
-              {event.points}
-            </Typography>
+            <FileUploadField
+              label="Foto segurando o codigo"
+              file={files.verificationPhoto}
+              onChange={(file) => updateFile('verificationPhoto', file)}
+            />
           </Stack>
-        ))}
-      </Stack>
-    </Box>
-  )
-}
+        </Paper>
+      </Box>
 
-function Rewards({
-  availablePoints,
-  redemptions,
-  selectedRewardId,
-  onMarkAsUsed,
-  onRedeem,
-  onSelect,
-}: {
-  availablePoints: number
-  redemptions: Redemption[]
-  selectedRewardId: string
-  onMarkAsUsed: (redemptionId: string) => void
-  onRedeem: () => void
-  onSelect: (rewardId: string) => void
-}) {
-  const selectedReward =
-    rewards.find((reward) => reward.id === selectedRewardId) ?? rewards[0]
-  const canRedeem = selectedReward.available && availablePoints >= selectedReward.cost
-
-  return (
-    <Box>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        justifyContent="space-between"
-        gap={1.5}
-      >
-        <Box>
-          <Typography fontSize={22} fontWeight={900}>
-            Recompensas
+      <FormControlLabel
+        sx={{ mt: 1.4, alignItems: 'flex-start' }}
+        control={
+          <Checkbox
+            checked={formValues.consentAccepted}
+            onChange={(event) =>
+              setFormValues((current) => ({
+                ...current,
+                consentAccepted: event.target.checked,
+              }))
+            }
+          />
+        }
+        label={
+          <Typography fontSize={14} color="text.secondary" lineHeight={1.45}>
+            Confirmo que a verificacao enviada pertence a mim e aceito a revisao da conta de criador.
           </Typography>
-          <Typography color="text.secondary" mt={0.5}>
-            Escolha uma recompensa para trocar pelos seus pontos.
-          </Typography>
-        </Box>
+        }
+      />
 
+      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} mt={1.4}>
         <Button
+          type="submit"
           variant="contained"
-          disabled={!canRedeem}
-          onClick={onRedeem}
-          startIcon={<Coins size={18} />}
+          disabled={!canSubmit}
+          startIcon={<Send size={17} />}
           sx={{
             height: 44,
-            px: 2.4,
+            px: 2.2,
             borderRadius: 2,
             textTransform: 'none',
             fontWeight: 900,
@@ -1187,117 +1065,79 @@ function Rewards({
             boxShadow: 'none',
           }}
         >
-          Resgatar
+          Enviar pedido
         </Button>
       </Stack>
-
-      <Box
-        sx={{
-          mt: 1.5,
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 1.2,
-        }}
-      >
-        {rewards.map((reward) => {
-          const active = reward.id === selectedRewardId
-
-          return (
-            <Paper
-              key={reward.id}
-              elevation={0}
-              onClick={() => onSelect(reward.id)}
-              sx={{
-                border: active ? '1px solid #fb923c' : '1px solid #e5e7eb',
-                borderRadius: 2,
-                p: 1.5,
-                cursor: 'pointer',
-                background: active ? '#fffaf3' : '#fff',
-                boxShadow: active
-                  ? '0 0 0 3px rgba(249,115,22,.08)'
-                  : 'none',
-              }}
-            >
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Gift size={20} color={active ? '#f97316' : '#64748b'} />
-                <Typography fontWeight={900}>{reward.title}</Typography>
-              </Stack>
-
-              <Typography mt={1} fontSize={24} fontWeight={900}>
-                {reward.amount}
-              </Typography>
-
-              <Typography color="text.secondary" fontSize={14}>
-                {reward.cost} pontos
-              </Typography>
-
-              <Chip
-                sx={{ mt: 1.5 }}
-                size="small"
-                label={reward.available ? 'Disponivel' : 'Bloqueada'}
-                color={reward.available ? 'success' : 'default'}
-              />
-            </Paper>
-          )
-        })}
-      </Box>
-
-      <Divider sx={{ my: 2 }} />
-
-      <Typography fontSize={20} fontWeight={900}>
-        Registos de resgate
-      </Typography>
-
-      <Stack spacing={1} mt={1.2}>
-        {redemptions.map((redemption) => (
-          <Paper
-            key={redemption.id}
-            elevation={0}
-            sx={{
-              border: '1px solid #e5e7eb',
-              borderRadius: 2,
-              p: 1.5,
-            }}
-          >
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              gap={1.5}
-            >
-              <Box>
-                <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
-                  <Typography fontWeight={900}>
-                    {redemption.rewardTitle} - {redemption.amount}
-                  </Typography>
-                  <Chip
-                    size="small"
-                    label={redemption.status === 'pending' ? 'Pendente' : 'Codigo usado'}
-                    color={redemption.status === 'pending' ? 'warning' : 'success'}
-                  />
-                </Stack>
-
-                <Typography mt={0.7} fontSize={13} color="text.secondary">
-                  Codigo: {redemption.code}
-                </Typography>
-                <Typography fontSize={13} color="text.secondary">
-                  Pedido: {redemption.requestedAt} - {redemption.cost} pontos
-                </Typography>
-              </Box>
-
-              {redemption.status === 'pending' && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => onMarkAsUsed(redemption.id)}
-                  sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, textTransform: 'none' }}
-                >
-                  Simular confirmacao admin
-                </Button>
-              )}
-            </Stack>
-          </Paper>
-        ))}
-      </Stack>
     </Box>
+  )
+}
+
+function FileUploadField({
+  label,
+  file,
+  onChange,
+  optional = false,
+}: {
+  label: string
+  file: File | null
+  onChange: (file: File | null) => void
+  optional?: boolean
+}) {
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) auto' },
+        gap: 1,
+        alignItems: 'center',
+        border: '1px solid #e5e7eb',
+        borderRadius: 2,
+        p: 1,
+      }}
+    >
+      <Stack direction="row" alignItems="center" gap={1} minWidth={0}>
+        <FileImage size={18} color="#64748b" />
+        <Box minWidth={0}>
+          <Typography fontWeight={850} fontSize={14} noWrap>
+            {label}{optional ? ' (opcional)' : ''}
+          </Typography>
+          <Typography color="text.secondary" fontSize={12} noWrap>
+            {file ? file.name : 'Nenhum ficheiro selecionado'}
+          </Typography>
+        </Box>
+      </Stack>
+
+      <Button
+        component="label"
+        variant="outlined"
+        size="small"
+        startIcon={<Upload size={15} />}
+        sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 850 }}
+      >
+        Escolher
+        <input
+          hidden
+          accept="image/*"
+          type="file"
+          onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+        />
+      </Button>
+    </Box>
+  )
+}
+
+function DocumentPreview({ label, value }: { label: string; value: string }) {
+  return (
+    <Stack direction="row" alignItems="center" gap={1} minWidth={0}>
+      <FileImage size={17} color="#64748b" />
+      <Box minWidth={0}>
+        <Typography color="text.secondary" fontSize={12}>
+          {label}
+        </Typography>
+        <Typography fontWeight={850} fontSize={14} noWrap>
+          {value}
+        </Typography>
+      </Box>
+    </Stack>
   )
 }

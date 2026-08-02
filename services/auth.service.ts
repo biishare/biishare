@@ -24,6 +24,15 @@ export type AuthResponse = {
 
 const AUTH_USER_KEY = "biishare_auth_user";
 const LEGACY_AUTH_TOKEN_KEY = "biishare_auth_token";
+export const AUTH_SESSION_CHANGED_EVENT = "biishare_auth_session_changed";
+
+function notifyAuthSessionChanged() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT));
+}
 
 export function getApiErrorMessage(error: unknown, fallback: string) {
   if (error instanceof AxiosError) {
@@ -36,11 +45,13 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 export function saveAuthSession(data: AuthResponse) {
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
   localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+  notifyAuthSessionChanged();
 }
 
 export function saveAuthUser(user: AuthUser) {
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
   localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+  notifyAuthSessionChanged();
 }
 
 export function getAuthSession() {
@@ -63,6 +74,7 @@ export function getAuthSession() {
 export function clearAuthSession() {
   localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
+  notifyAuthSessionChanged();
 }
 
 export async function loginUser(values: LoginFormValues) {

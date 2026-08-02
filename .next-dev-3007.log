@@ -1,0 +1,41 @@
+
+> biillearn@0.1.0 dev
+> next dev -p 3007
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3007
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 17.4s
+ ○ Compiling /login ...
+ ✓ Compiled /login in 37.5s (2295 modules)
+ GET /login 200 in 38668ms
+ ✓ Compiled in 1369ms (889 modules)
+ ○ Compiling /register ...
+ ✓ Compiled /register in 2.7s (1434 modules)
+ ✓ Compiled in 1103ms (877 modules)
+ GET /api/auth/facebook 307 in 4578ms
+ GET /register 200 in 5576ms
+ ✓ Compiled in 3.5s (891 modules)
+ ✓ Compiled in 652ms (891 modules)
+ ✓ Compiled in 791ms (891 modules)
+ ✓ Compiled in 251.5s (890 modules)
+ ✓ Compiled in 2.1s (890 modules)
+ ✓ Compiled in 3.3s (890 modules)
+ ✓ Compiled in 2.4s (890 modules)
+ ✓ Compiled in 1352ms (890 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 40.7s (3558 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 4.6s (3767 modules)
+ ✓ Compiled in 7.9s (1796 modules)
+ ✓ Compiled in 20.3s (1748 modules)
+ ✓ Compiled in 9.8s (1748 modules)
+ ✓ Compiled in 3.4s (1748 modules)
+ ✓ Compiled in 1367ms (1748 modules)
+ ✓ Compiled in 1675ms (1748 modules)
+ ○ Compiling /api/auth/google ...
+ ✓ Compiled /login in 212.4s (94 modules)
+ ✓ Compiled in 32.8s (1077 modules)
+ ✓ Compiled in 36.5s (1133 modules)

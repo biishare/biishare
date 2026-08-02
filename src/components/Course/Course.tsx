@@ -19,6 +19,7 @@ import { buildFeed } from '../../../utils/buildFeed'
 import { FeedBlock } from '../../../types/feed'
 import { ToqueRow } from '../Toque/ToqueRow'
 import ContentCard from './ContentCard'
+import { getLevelLabel, getSubjectLabels } from '../../../utils/labels'
 
 const LIMIT = 10
 
@@ -27,10 +28,12 @@ export default function ContentList() {
 
   const subjectId = searchParams.get('subjectId') || undefined
   const level = searchParams.get('level') || undefined
+  const searchQuery = searchParams.get('q')?.trim() || undefined
   const contentType = searchParams.get('contentType') as
     | 'video'
     | 'document'
     | undefined
+  const pageLimit = searchQuery ? 1000 : LIMIT
 
   const {
     data,
@@ -39,21 +42,26 @@ export default function ContentList() {
     isLoading,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['posts', { subjectId, level, contentType }],
+    queryKey: ['posts', { subjectId, level, contentType, searchQuery }],
 
     queryFn: async ({ pageParam }) => {
       return getPosts({
         subjectId,
         level,
         contentType,
-        page: pageParam,
-        limit: LIMIT,
+        q: searchQuery,
+        page: searchQuery ? 1 : pageParam,
+        limit: pageLimit,
       })
     },
 
     initialPageParam: 1,
 
     getNextPageParam: (lastPage, allPages) => {
+      if (searchQuery) {
+        return undefined
+      }
+
       const total = lastPage.total ?? 0
       const loaded = allPages.length * LIMIT
 
@@ -64,14 +72,34 @@ export default function ContentList() {
     placeholderData: (prev) => prev,
   })
 
-  const posts: PostDTO[] = useMemo(
+  const fetchedPosts: PostDTO[] = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data],
   )
 
+  const posts: PostDTO[] = useMemo(() => {
+    if (!searchQuery) {
+      return fetchedPosts
+    }
+
+    const normalizedQuery = normalizeSearchValue(searchQuery)
+
+    return fetchedPosts.filter((post) =>
+      postMatchesSearch(post, normalizedQuery),
+    )
+  }, [fetchedPosts, searchQuery])
+
   const feed: FeedBlock[] = useMemo(
-    () => buildFeed(posts, subjectId),
-    [posts, subjectId],
+    () =>
+      searchQuery
+        ? [
+            {
+              type: 'content',
+              items: posts,
+            },
+          ]
+        : buildFeed(posts, subjectId),
+    [posts, searchQuery, subjectId],
   )
 
   const handleLoadMore = () => {
@@ -165,11 +193,34 @@ export default function ContentList() {
         {!isLoading && posts.length === 0 && (
           <Box gridColumn="1 / -1" textAlign="center" py={8}>
             <Typography color="text.secondary">
-              Nenhum conteudo encontrado
+              {searchQuery
+                ? `Nenhum conteudo encontrado para "${searchQuery}"`
+                : 'Nenhum conteudo encontrado'}
             </Typography>
           </Box>
         )}
       </Box>
     </ThemeProvider>
   )
+}
+
+function postMatchesSearch(post: PostDTO, normalizedQuery: string) {
+  const searchableText = [
+    post.title,
+    post.description,
+    getSubjectLabels(post.subjectIds, post.subjectId),
+    getLevelLabel(post.level),
+    post.contentType,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  return normalizeSearchValue(searchableText).includes(normalizedQuery)
+}
+
+function normalizeSearchValue(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
 }

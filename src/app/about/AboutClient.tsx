@@ -6,25 +6,19 @@ import {
   Typography,
   Paper,
   Stack,
-  IconButton,
   Chip,
   Divider,
 } from '@mui/material'
 
 import Image from 'next/image'
 import {
-  Home,
   Target,
   BookOpen,
   Globe,
   Sparkles,
 } from 'lucide-react'
 
-import { useRouter } from 'next/navigation'
-
 export default function AboutPage() {
-  const router = useRouter()
-
   return (
     <Box
       sx={{
@@ -321,38 +315,6 @@ export default function AboutPage() {
 
           </Stack>
         </Paper>
-
-        {/* FLOATING HOME BUTTON */}
-        <IconButton
-          aria-label="Ir para página inicial"
-          onClick={() => router.push('/')}
-          sx={{
-            position: 'fixed',
-            bottom: {
-              xs: 16,
-              md: 24,
-            },
-            right: {
-              xs: 16,
-              md: 24,
-            },
-            width: 58,
-            height: 58,
-            color: '#fff',
-            backdropFilter: 'blur(10px)',
-            background: 'rgba(255,122,0,0.92)',
-            border: '1px solid rgba(255,255,255,0.25)',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
-            transition: 'all .25s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              background: '#e66a00',
-            },
-          }}
-        >
-          <Home size={22} />
-        </IconButton>
-
       </Container>
     </Box>
   )

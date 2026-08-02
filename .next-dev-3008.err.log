@@ -1,0 +1,26 @@
+Warning: Reverting webpack devtool to 'eval-source-map'.
+Changing the webpack devtool in development mode will cause severe performance regressions.
+Read more: https://nextjs.org/docs/messages/improper-devtool
+ ⨯ ./lib/api-base-url.ts
+Error: 
+  [31mx[0m Expected ';', '}' or <eof>
+    ,-[[36;1;4mE:\Marques\biishare\lib\api-base-url.ts[0m:4:1]
+ [2m 4[0m |   return hostname?.replace(/^\[|\]$/g, "").toLowerCase();
+ [2m 5[0m | }
+ [2m 6[0m | 
+ [2m 7[0m | function isLocalHostname(hostname?: string | null) {`r`n  const normalizedHostname = normalizeHostname(hostname);`r`n`r`n  return Boolean(normalizedHostname && localHostnames.has(normalizedHostname));`r`n}`r`n`r`nfunction isPrivateDevelopmentHostname(hostname?: string | null) {
+    : [31;1m                                                    ^|^[0m[33;1m^[0m
+    :                                                      [31;1m`-- [31;1mThis is the expression part of an expression statement[0m[0m
+ [2m 8[0m |   const normalizedHostname = normalizeHostname(hostname);
+ [2m 9[0m | 
+ [2m10[0m |   if (!normalizedHostname) {
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./lib/api-base-url.ts
+./lib/axios.ts
+./services/auth.service.ts
+./src/components/Navigation/AppShell.tsx

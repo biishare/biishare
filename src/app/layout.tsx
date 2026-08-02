@@ -6,6 +6,7 @@ import { GA_ID } from '../../lib/analytics'
 import AnalyticsTracker from '@/components/AnalyticsTracker/AnalyticsTracker'
 import ScrollRestoration from '@/components/ScrollRestoration/ScrollRestoration'
 import { createMetadata } from '@/MetaData/baseMetadata'
+import AppShell from '@/components/Navigation/AppShell'
 
 interface Props {
   children: React.ReactNode
@@ -39,7 +40,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <ScrollRestoration />
           </Suspense>
-          {children}
+          <AppShell>{children}</AppShell>
         </Providers>
 
         {/* GA */}

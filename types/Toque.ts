@@ -26,3 +26,16 @@ export type Toque = {
   createdAt: string
   updatedAt: string
 } & (ToqueVideo | ToqueImage)
+export type SavedToqueDTO = {
+  id: string
+  savedAt: string
+  toque: Toque
+}
+
+export type SavedToquesResponse = {
+  data: SavedToqueDTO[]
+  page?: number
+  limit?: number
+  total?: number
+  totalPages?: number
+}

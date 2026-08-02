@@ -18,6 +18,7 @@ import { PdfImageViewer } from "../Document/PdfImageViewer";
 import VideoPlay from "../VideoPlay/VideoPlay";
 import RelatedContent from "./RelatedContent";
 import { getLevelLabel, getSubjectLabels } from "../../../utils/labels";
+import SavePostButton from "../Post/SavePostButton";
 
 interface DetailContentProps {
   post: PostDTO;
@@ -40,7 +41,7 @@ export default function DetailContent({ post }: DetailContentProps) {
   const subjectLabel = getSubjectLabels(post.subjectIds, post.subjectId);
 
   if (!activeItem) {
-    return <Typography>Nenhum conteúdo disponível</Typography>;
+    return <Typography>Nenhum conteÃºdo disponÃ­vel</Typography>;
   }
 
   const totalPages =
@@ -64,7 +65,7 @@ export default function DetailContent({ post }: DetailContentProps) {
           gap: 3,
         }}
       >
-        {/* 🎥 HERO */}
+        {/* ðŸŽ¥ HERO */}
         <Box>
           <Paper
             sx={{
@@ -90,7 +91,7 @@ export default function DetailContent({ post }: DetailContentProps) {
                   maxPages={totalPages}
                 />
 
-                {/* botão flutuante */}
+                {/* botÃ£o flutuante */}
                 <Button
                   size="small"
                   variant="contained"
@@ -113,18 +114,26 @@ export default function DetailContent({ post }: DetailContentProps) {
             )}
           </Paper>
 
-          {/* 📄 INFO */}
+          {/* ðŸ“„ INFO */}
           <Box mt={2}>
-            <Typography variant="h5" fontWeight={700}>
-              {post.title}
-            </Typography>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              gap={1}
+            >
+              <Typography variant="h5" fontWeight={700}>
+                {post.title}
+              </Typography>
+              <SavePostButton postId={post._id} title={post.title} />
+            </Stack>
 
             <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
               <Chip label={subjectLabel} size="small" />
               <Chip label={getLevelLabel(post.level)} size="small" />
 
               {contentType === "document" && totalPages && (
-                <Chip label={`${totalPages} páginas`} size="small" />
+                <Chip label={`${totalPages} pÃ¡ginas`} size="small" />
               )}
             </Stack>
 
@@ -149,7 +158,7 @@ export default function DetailContent({ post }: DetailContentProps) {
           </Box>
         </Box>
 
-        {/* 📚 PLAYLIST */}
+        {/* ðŸ“š PLAYLIST */}
         <Paper
           sx={{
             borderRadius: 3,
@@ -163,7 +172,7 @@ export default function DetailContent({ post }: DetailContentProps) {
         >
           <Typography fontWeight={700} mb={2}>
             {contentType === "video"
-              ? "Conteúdos do vídeo"
+              ? "ConteÃºdos do vÃ­deo"
               : "Documentos"}
           </Typography>
 
@@ -190,3 +199,4 @@ export default function DetailContent({ post }: DetailContentProps) {
     </Box>
   );
 }
+

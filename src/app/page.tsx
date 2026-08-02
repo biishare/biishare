@@ -1,13 +1,12 @@
 import ContentFilters from '@/components/Category/ContentFilters'
 import ContentList from '@/components/Course/Course'
-import Footer from '@/components/Footer/Footer'
 import Header from '@/components/Header/Header'
 import { ToqueRow } from '@/components/Toque/ToqueRow'
 import { Suspense } from 'react'
 
 export default function Page() {
   return (
-    <div className="w-full h-full overflow-x-hidden">
+    <div className="w-full h-full overflow-x-clip">
       <Header />
 
       <section className="mx-auto w-full px-4 pt-4 sm:px-6 lg:px-24">
@@ -22,7 +21,6 @@ export default function Page() {
           </div>
         </div>
       </Suspense>
-      <Footer />
     </div>
   )
 }

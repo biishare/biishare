@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
   useEffect,
   useMemo,
@@ -11,14 +10,12 @@ import {
 
 import {
   Box,
-  Button,
   Chip,
   CircularProgress,
   Typography,
 } from '@mui/material'
 
 import { useQuery } from '@tanstack/react-query'
-import { Home } from 'lucide-react'
 
 import { ToquesCard } from '@/components/Toque/Toques'
 import { Toque } from '../../../types/Toque'
@@ -30,7 +27,6 @@ import {
 const TOQUE_LIMIT = 32
 
 export default function ToqueListPage() {
-  const router = useRouter()
   const feedRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef<Array<HTMLDivElement | null>>([])
 
@@ -182,7 +178,10 @@ export default function ToqueListPage() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: {
+          xs: 'calc(100svh - var(--mobile-nav-height, 0px))',
+          md: '100vh',
+        },
         bgcolor: {
           xs: '#050505',
           md: '#f7f1df',
@@ -224,38 +223,6 @@ export default function ToqueListPage() {
           },
         }}
       >
-        <Button
-          onClick={() => router.push('/')}
-          aria-label="Voltar ao inicio"
-          sx={{
-            minWidth: 40,
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: {
-              xs: '1px solid rgba(255,255,255,.2)',
-              md: '1px solid rgba(0,0,0,.08)',
-            },
-            bgcolor: {
-              xs: 'rgba(255,255,255,.14)',
-              md: 'rgba(255,255,255,.9)',
-            },
-            color: {
-              xs: '#fff',
-              md: '#F4A300',
-            },
-            backdropFilter: 'blur(10px)',
-            transition: '.25s',
-            '&:hover': {
-              bgcolor: '#F4A300',
-              color: '#fff',
-              transform: 'translateY(-1px)',
-            },
-          }}
-        >
-          <Home size={18} />
-        </Button>
-
         {filterBar}
       </Box>
 
@@ -267,7 +234,7 @@ export default function ToqueListPage() {
             }}
             sx={{
               display: { xs: 'flex', md: 'none' },
-              height: '100svh',
+              height: 'calc(100svh - var(--mobile-nav-height, 0px))',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
@@ -317,7 +284,10 @@ export default function ToqueListPage() {
       {!loading && shorts.length === 0 && (
         <Box
           sx={{
-            minHeight: '100vh',
+            minHeight: {
+              xs: 'calc(100svh - var(--mobile-nav-height, 0px))',
+              md: '100vh',
+            },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -340,7 +310,7 @@ export default function ToqueListPage() {
           <Box
             sx={{
               display: { xs: 'block', md: 'none' },
-              height: '100svh',
+              height: 'calc(100svh - var(--mobile-nav-height, 0px))',
               overflowY: 'auto',
               overscrollBehaviorY: 'contain',
               scrollSnapType: 'y mandatory',
@@ -361,7 +331,7 @@ export default function ToqueListPage() {
                     itemRefs.current[index] = element as HTMLDivElement | null
                   }}
                   sx={{
-                    height: '100svh',
+                    height: 'calc(100svh - var(--mobile-nav-height, 0px))',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
                     display: 'flex',

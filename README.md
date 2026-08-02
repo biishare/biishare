@@ -42,6 +42,7 @@ Variavel disponivel:
 
 - `NEXT_PUBLIC_API_BASE_URL`: URL base da API utilizada pela aplicacao
 - `NEXT_PUBLIC_GOOGLE_AUTH_URL` (opcional): URL completa do endpoint OAuth Google. Se nao for definida, a aplicacao usa `NEXT_PUBLIC_API_BASE_URL/auth/google`.
+- `NEXT_PUBLIC_FACEBOOK_AUTH_URL` (opcional): URL completa do endpoint OAuth Facebook. Se nao for definida, a aplicacao usa `NEXT_PUBLIC_API_BASE_URL/auth/facebook`.
 
 Nunca envie ficheiros `.env.local` ou `.env` com credenciais reais para o repositorio.
 

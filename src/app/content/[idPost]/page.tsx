@@ -1,5 +1,4 @@
 import Header from '@/components/Header/Header'
-import Footer from '@/components/Footer/Footer'
 import ContentPage from '@/components/DetailCourse/ContentPage'
 
 
@@ -17,7 +16,6 @@ export default function CourseDescription({ params }: idPostPageProps) {
     <>
       <Header />
       <ContentPage id={idPost}/>
-      <Footer />
     </>
   )
 }

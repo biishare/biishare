@@ -1,0 +1,58 @@
+Warning: Reverting webpack devtool to 'eval-source-map'.
+Changing the webpack devtool in development mode will cause severe performance regressions.
+Read more: https://nextjs.org/docs/messages/improper-devtool
+TypeError: (0 , _useMediaQuery.unstable_createUseMediaQuery) is not a function
+    at eval (webpack-internal:///(rsc)/./node_modules/@mui/material/useMediaQuery/index.js:9:71)
+    at (rsc)/./node_modules/@mui/material/useMediaQuery/index.js (E:\Marques\biishare\.next\server\vendor-chunks\@mui.js:12622:1)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/@mui/material/index.js:2541:46)
+    at (rsc)/./node_modules/@mui/material/index.js (E:\Marques\biishare\.next\server\vendor-chunks\@mui.js:12261:1)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./src/app/not-found.tsx:8:97)
+    at (rsc)/./src/app/not-found.tsx (E:\Marques\biishare\.next\server\app\_not-found\page.js:458:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async e7 (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:396672)
+    at async tb (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400360)
+    at async tS (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400773)
+    at async tR (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2130)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2722 {
+  digest: '4115916553'
+}
+ ⨯ TypeError: (0 , _useMediaQuery.unstable_createUseMediaQuery) is not a function
+    at eval (webpack-internal:///(rsc)/./node_modules/@mui/material/useMediaQuery/index.js:9:71)
+    at (rsc)/./node_modules/@mui/material/useMediaQuery/index.js (E:\Marques\biishare\.next\server\vendor-chunks\@mui.js:12622:1)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/@mui/material/index.js:2541:46)
+    at (rsc)/./node_modules/@mui/material/index.js (E:\Marques\biishare\.next\server\vendor-chunks\@mui.js:12261:1)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./src/app/not-found.tsx:8:97)
+    at (rsc)/./src/app/not-found.tsx (E:\Marques\biishare\.next\server\app\_not-found\page.js:458:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at async e7 (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:396672)
+    at async tb (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400360)
+    at async tS (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:400773)
+    at async tR (E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2130)
+    at async E:\Marques\biishare\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2722 {
+  digest: '4115916553'
+}
+ ⨯ TypeError: (0 , _useMediaQuery.unstable_createUseMediaQuery) is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (./src/app/not-found.tsx:8:97)
+    at (rsc)/./src/app/not-found.tsx (E:\Marques\biishare\.next\server\app\_not-found\page.js:458:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+digest: "3386400860"
+ ⨯ TypeError: (0 , _useMediaQuery.unstable_createUseMediaQuery) is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (./src/app/not-found.tsx:8:97)
+    at (rsc)/./src/app/not-found.tsx (E:\Marques\biishare\.next\server\app\_not-found\page.js:458:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+digest: "3386400860"
+ ⨯ TypeError: (0 , _useMediaQuery.unstable_createUseMediaQuery) is not a function
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at __webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+    at eval (./src/app/not-found.tsx:8:97)
+    at (rsc)/./src/app/not-found.tsx (E:\Marques\biishare\.next\server\app\_not-found\page.js:458:1)
+    at Function.__webpack_require__ (E:\Marques\biishare\.next\server\webpack-runtime.js:33:42)
+digest: "4115916553"

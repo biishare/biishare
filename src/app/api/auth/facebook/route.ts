@@ -5,7 +5,7 @@ import {
 } from '../../../../../constants/features'
 import { resolveRequestApiBaseUrl } from '../../../../../lib/api-base-url'
 
-const DEFAULT_GOOGLE_AUTH_PATH = '/auth/google'
+const DEFAULT_FACEBOOK_AUTH_PATH = '/auth/facebook'
 
 function getProviderConfigErrorUrl(request: NextRequest) {
   const url = new URL('/login', request.url)
@@ -18,22 +18,22 @@ export function GET(request: NextRequest) {
     return new NextResponse(null, { status: 404 })
   }
 
-  const configuredUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL
+  const configuredUrl = process.env.NEXT_PUBLIC_FACEBOOK_AUTH_URL
   const apiBaseUrl = resolveRequestApiBaseUrl(request.url)
   const fallbackUrl = apiBaseUrl
-    ? new URL(DEFAULT_GOOGLE_AUTH_PATH, apiBaseUrl).toString()
+    ? new URL(DEFAULT_FACEBOOK_AUTH_PATH, apiBaseUrl).toString()
     : null
 
-  const googleAuthUrl = configuredUrl || fallbackUrl
+  const facebookAuthUrl = configuredUrl || fallbackUrl
 
-  if (!googleAuthUrl) {
+  if (!facebookAuthUrl) {
     return NextResponse.redirect(getProviderConfigErrorUrl(request))
   }
 
   let redirectUrl: URL
 
   try {
-    redirectUrl = new URL(googleAuthUrl)
+    redirectUrl = new URL(facebookAuthUrl)
   } catch {
     return NextResponse.redirect(getProviderConfigErrorUrl(request))
   }

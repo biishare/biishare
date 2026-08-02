@@ -1,11 +1,17 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { getLoginRedirectPath } from '../constants/features'
+import {
+  getHostnameFromHostHeader,
+  resolveApiBaseUrl,
+} from '../lib/api-base-url'
 import type { AuthUser } from './auth.service'
 
 export async function getRequiredServerUser(): Promise<AuthUser> {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+  const apiBaseUrl = resolveApiBaseUrl(
+    getHostnameFromHostHeader(headers().get('host'))
+  )
 
   if (!apiBaseUrl) {
     redirect(getLoginRedirectPath())

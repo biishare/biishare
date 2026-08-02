@@ -1,40 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Tooltip } from '@mui/material'
-import { UserCircle, Zap } from 'lucide-react'
 
-import { AuthUser, getAuthSession } from '../../../services/auth.service'
-import { PROFILE_PAGE_AVAILABLE } from '../../../constants/features'
+import SearchAction from '@/components/Search/SearchAction'
+import { useFeedChrome } from '../../../hooks/useFeedChrome'
+import type { AuthUser } from '../../../services/auth.service'
 
 export default function Header({
-  initialUser,
+  initialUser: _initialUser,
+  autoHide = true,
 }: {
   initialUser?: AuthUser | null
+  autoHide?: boolean
 }) {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(
-    PROFILE_PAGE_AVAILABLE ? initialUser ?? null : null
-  )
-  const profileHref = authUser?.username ? `/profile/${authUser.username}` : '/profile'
-  const profileTooltip = authUser?.name || 'Perfil'
-
-  useEffect(() => {
-    if (!PROFILE_PAGE_AVAILABLE) {
-      return
-    }
-
-    if (initialUser !== undefined) {
-      setAuthUser(initialUser)
-      return
-    }
-
-    setAuthUser(getAuthSession()?.user ?? null)
-  }, [initialUser])
+  const { isHeaderVisible } = useFeedChrome()
+  const visible = autoHide ? isHeaderVisible : true
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur md:hidden"
+      style={{
+        transform: visible
+          ? 'translate3d(0, 0, 0)'
+          : 'translate3d(0, -100%, 0)',
+        transition: 'transform 180ms ease',
+        willChange: 'transform',
+      }}
+    >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 overflow-hidden px-4 sm:px-6">
         <Link
           href="/"
@@ -68,37 +61,7 @@ export default function Header({
         </Link>
 
         <StackActions>
-          {PROFILE_PAGE_AVAILABLE && (
-            <Tooltip title={profileTooltip}>
-              <Link
-                href={profileHref}
-                aria-label={profileTooltip}
-                className="grid h-[42px] w-[42px] shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white text-orange-500 no-underline transition hover:border-orange-200 hover:bg-orange-50"
-              >
-                {authUser?.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={authUser.avatarUrl}
-                    alt={authUser.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <UserCircle size={22} />
-                )}
-              </Link>
-            </Tooltip>
-          )}
-
-          <Link
-            href="/toque"
-            aria-label="Explorar Toques"
-            className="inline-flex h-[42px] min-w-11 shrink-0 items-center justify-center gap-0 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 px-[13px] font-bold text-white no-underline shadow-[0_8px_20px_rgba(245,158,11,.25)] transition hover:-translate-y-0.5 hover:from-amber-600 hover:to-orange-500 hover:shadow-[0_12px_28px_rgba(245,158,11,.35)] active:scale-[.97] sm:min-w-[158px] sm:gap-2 sm:px-[22px]"
-          >
-            <Zap size={18} className="shrink-0" />
-            <span className="hidden whitespace-nowrap sm:inline">
-              Explorar Toques
-            </span>
-          </Link>
+          <SearchAction />
         </StackActions>
       </div>
     </header>

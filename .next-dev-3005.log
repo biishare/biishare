@@ -1,0 +1,52 @@
+
+> biillearn@0.1.0 dev
+> next dev -p 3005
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3005
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 39.1s
+ ○ Compiling / ...
+ ✓ Compiled / in 25.2s (2737 modules)
+ GET / 200 in 26657ms
+ ✓ Compiled in 1660ms (1019 modules)
+ ✓ Compiled in 254ms (1005 modules)
+ ✓ Compiled in 2.8s (2737 modules)
+ ✓ Compiled in 72s (1019 modules)
+ ✓ Compiled in 6.6s (1019 modules)
+ ✓ Compiled in 3.6s (1019 modules)
+ ✓ Compiled in 3.7s (1019 modules)
+ ✓ Compiled in 14.5s (1020 modules)
+ ✓ Compiled in 2.7s (1020 modules)
+ ✓ Compiled in 8.2s (1020 modules)
+ ✓ Compiled in 9.6s (1020 modules)
+ ✓ Compiled in 4.1s (1020 modules)
+ ✓ Compiled in 832ms (1020 modules)
+ ✓ Compiled in 32.5s (1020 modules)
+ ✓ Compiled in 170.5s (1020 modules)
+ ✓ Compiled in 10.9s (1020 modules)
+ ✓ Compiled in 9.6s (1020 modules)
+ ✓ Compiled in 2.1s (1020 modules)
+ ✓ Compiled in 4.4s (1020 modules)
+ ✓ Compiled in 2.2s (1020 modules)
+ ✓ Compiled in 2.3s (1020 modules)
+ ✓ Compiled in 594ms (1020 modules)
+ ✓ Compiled in 2.4s (1020 modules)
+ ✓ Compiled in 1056ms (1020 modules)
+ ✓ Compiled in 1508ms (1020 modules)
+ ✓ Compiled in 1272ms (1020 modules)
+ ✓ Compiled in 330.4s (1020 modules)
+ ✓ Compiled in 50.1s (1020 modules)
+ ✓ Compiled in 68.8s (1021 modules)
+ ✓ Compiled in 2.5s (1021 modules)
+ ✓ Compiled in 2.6s (1021 modules)
+ ✓ Compiled in 1549ms (1021 modules)
+ ✓ Compiled in 121.3s (1021 modules)
+ ✓ Compiled in 34.5s (1021 modules)
+ ✓ Compiled in 5.4s (1021 modules)
+ ✓ Compiled in 1997ms (1021 modules)
+ ✓ Compiled in 1430ms (1021 modules)
+ ✓ Compiled in 1468.9s (1021 modules)
+ ✓ Compiled in 64.7s (1021 modules)

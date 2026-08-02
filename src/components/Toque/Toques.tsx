@@ -33,6 +33,7 @@ import {
 
 import { Toque } from '../../../types/Toque'
 import { CURIOSITY_AREAS } from '../../../constants/shorts/subjects.shorts'
+import SaveToqueButton from './SaveToqueButton'
 
 let activeVideo: HTMLVideoElement | null = null
 let globalMuted = true
@@ -488,6 +489,11 @@ export const ToquesCard = memo(function ToquesCard({
               {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </IconButton>
           )}
+
+          <SaveToqueButton
+            toqueId={item._id}
+            title={item.title}
+          />
 
           <IconButton
             aria-label="Partilhar toque"

@@ -1,5 +1,5 @@
-export const PROFILE_PAGE_AVAILABLE = false
-export const AUTH_PAGES_AVAILABLE = false
+export const PROFILE_PAGE_AVAILABLE = true
+export const AUTH_PAGES_AVAILABLE = true
 
 export function getLoginRedirectPath() {
   return AUTH_PAGES_AVAILABLE ? '/login' : '/toque'

@@ -1,21 +1,60 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box, Chip, Button, Popover } from "@mui/material";
+import { Box, Chip, Button, Popover, useMediaQuery } from "@mui/material";
 import { LEVEL_LABEL_MAP, SUBJECT_LABEL_MAP } from "../../../constants/maps";
 import { usePostFilters } from "../../../utils/Post/FetchPosts";
 import { FiltersSkeleton } from "../Skeleton/Filters.Skeleton";
+import { useFeedChrome } from "../../../hooks/useFeedChrome";
 
 export default function ContentFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { filters, loading, error } = usePostFilters();
+  const { filterTop } = useFeedChrome();
+  const isDesktop = useMediaQuery("(min-width:900px)", { noSsr: true });
+  const stickyTop = isDesktop ? 0 : filterTop;
+  const filtersRef = useRef<HTMLDivElement | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [popoverType, setPopoverType] = useState<string>("");
 
-  if (loading) return <FiltersSkeleton />;
+  useEffect(() => {
+    let frame = 0;
+
+    const updateStickyState = () => {
+      frame = 0;
+      const filtersNode = filtersRef.current;
+
+      if (!filtersNode) return;
+
+      const { top } = filtersNode.getBoundingClientRect();
+      setIsStuck(top <= stickyTop + 1);
+    };
+
+    const handleScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateStickyState);
+    };
+
+    updateStickyState();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
+  }, [loading, stickyTop]);
+
+  if (loading) return <FiltersSkeleton stickyTop={stickyTop} stuck={isStuck} />;
   if (error || !filters) return <Box mt={4}>Erro ao carregar filtros</Box>;
 
   // obter valor atual
@@ -26,7 +65,10 @@ export default function ContentFilters() {
     const params = new URLSearchParams(searchParams.toString());
     value ? params.set(key, value) : params.delete(key);
     params.delete("page");
-    router.push(`/?${params.toString()}`);
+    const query = params.toString();
+    router.replace(query ? `/?${query}` : "/", {
+      scroll: false,
+    });
   };
 
   const openPopover = (event: React.MouseEvent<HTMLElement>, type: string) => {
@@ -66,22 +108,38 @@ export default function ContentFilters() {
 
   return (
     <Box
+      ref={filtersRef}
+      data-testid="content-filters"
+      aria-label="Filtros de conteudo"
       sx={{
         display: "flex",
         gap: 1,
         mt: 2,
-        mb: 1,
-        px: 2,
+        mb: isStuck ? 2 : 1,
+        mx: {
+          xs: 0,
+          lg: -1.5,
+        },
+        px: {
+          xs: 2,
+          lg: 1.5,
+        },
         overflowX: "auto",
         scrollbarWidth: "none",
         "&::-webkit-scrollbar": { display: "none" },
 
         position: "sticky",
-        top: 0,
-        zIndex: 999,
+        top: stickyTop,
+        zIndex: 40,
+        transition:
+          "top 180ms ease, margin-bottom 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease",
 
-        bgcolor: "background.paper",
-        borderBottom: "1px solid #e0e0e0",
+        bgcolor: isStuck ? "rgba(255,255,255,0.96)" : "background.paper",
+        backdropFilter: isStuck ? "blur(14px)" : "none",
+        borderBottom: isStuck
+          ? "1px solid rgba(226, 232, 240, 0.9)"
+          : "1px solid transparent",
+        boxShadow: "none",
         py: 1,
       }}
     >

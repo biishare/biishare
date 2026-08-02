@@ -24,7 +24,19 @@ export type PostDTO = {
   createdAt: string;
   updatedAt: string;
 };
+export type SavedPostDTO = {
+  id: string;
+  savedAt: string;
+  post: PostDTO;
+};
 
+export type SavedPostsResponse = {
+  data: SavedPostDTO[];
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+};
 /* ---------- FILTERS ---------- */
   
 export type PostFiltersResponse = {

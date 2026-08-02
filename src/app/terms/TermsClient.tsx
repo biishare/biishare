@@ -6,19 +6,13 @@ import {
     Typography,
     Paper,
     Stack,
-    IconButton,
     Divider,
 } from '@mui/material'
-
-import { Home } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 export { termsMetadata as metadata }
 from '@/MetaData/pages/terms'
 
 export default function TermsOfServicePage() {
-    const router = useRouter()
-
     return (
         <Box
             sx={{
@@ -159,28 +153,6 @@ export default function TermsOfServicePage() {
 
                     </Stack>
                 </Paper>
-
-                {/* HOME BUTTON */}
-                <IconButton
-                    aria-label="Ir para página inicial"
-                    onClick={() => router.push('/')}
-                    sx={{
-                        position: 'fixed',
-                        bottom: 24,
-                        right: 24,
-                        backgroundColor: '#FF7A00',
-                        color: '#fff',
-                        width: 56,
-                        height: 56,
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-                        '&:hover': {
-                            backgroundColor: '#e66a00',
-                        },
-                    }}
-                >
-                    <Home size={22} />
-                </IconButton>
-
             </Container>
         </Box>
     )

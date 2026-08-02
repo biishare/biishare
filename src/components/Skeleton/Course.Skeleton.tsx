@@ -1,26 +1,35 @@
 'use client'
 
-import { Box, Paper, Skeleton } from '@mui/material'
+import { Box, Skeleton } from '@mui/material'
 
 interface ContentCardSkeletonProps {
   count?: number
+  mobileCount?: number
 }
 
 export default function ContentCardSkeleton({
   count = 8,
+  mobileCount = 3,
 }: ContentCardSkeletonProps) {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
-        <Paper
+        <Box
           key={index}
           sx={{
-            display: 'flex',
+            display: {
+              xs: index >= mobileCount ? 'none' : 'flex',
+              sm: 'flex',
+            },
             flexDirection: 'column',
-            borderRadius: 3,
-            overflow: 'hidden',
-            border: '1px solid #e2e8f0',
-            backgroundColor: '#fff',
+            gap: 1.1,
+            minWidth: 0,
+
+            '@media (hover: hover) and (pointer: fine)': {
+              mx: -1,
+              p: 1,
+              borderRadius: 2,
+            },
           }}
         >
           <Box
@@ -28,6 +37,12 @@ export default function ContentCardSkeleton({
               position: 'relative',
               aspectRatio: '16 / 9',
               width: '100%',
+              overflow: 'hidden',
+              bgcolor: '#e2e8f0',
+
+              '@media (hover: hover) and (pointer: fine)': {
+                borderRadius: 1.5,
+              },
             }}
           >
             <Skeleton
@@ -36,39 +51,33 @@ export default function ContentCardSkeleton({
               sx={{
                 width: '100%',
                 height: '100%',
+                transform: 'none',
               }}
             />
 
             <Skeleton
-              variant="rounded"
+              variant="rectangular"
               animation="wave"
-              width={88}
-              height={24}
+              width={48}
+              height={20}
               sx={{
                 position: 'absolute',
-                top: 10,
-                left: 10,
-                borderRadius: 1,
+                right: 8,
+                bottom: 8,
                 bgcolor: 'rgba(0,0,0,.18)',
               }}
             />
           </Box>
 
-          <Box
-            p={2}
-            display="flex"
-            flexDirection="column"
-            gap={1}
-          >
-            <Box sx={{ minHeight: 48 }}>
-              <Skeleton height={24} width="94%" />
-              <Skeleton height={24} width="72%" />
+          <Box display="flex" flexDirection="column" gap={0.45} sx={{ pb: 0.5 }}>
+            <Box sx={{ minHeight: 44 }}>
+              <Skeleton height={22} width="94%" />
+              <Skeleton height={22} width="72%" />
             </Box>
 
-            <Skeleton height={18} width="78%" />
-            <Skeleton height={18} width="42%" />
+            <Skeleton height={18} width="68%" />
           </Box>
-        </Paper>
+        </Box>
       ))}
     </>
   )
