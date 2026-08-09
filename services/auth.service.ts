@@ -1,10 +1,20 @@
-import { AxiosError } from "axios";
+import { AxiosError } from 'axios';
 
-import { api } from "../lib/axios";
+import { api } from '../lib/axios';
 import type {
   LoginFormValues,
   RegisterFormValues,
-} from "../lib/validations/auth";
+} from '../lib/validations/auth';
+
+export type CreatorStatus = 'none' | 'pending' | 'approved';
+
+export type CreatorApplication = {
+  workDescription: string;
+  publicName: string;
+  verificationCode?: string;
+  verificationPhotoName?: string;
+  submittedAt: string;
+};
 
 export type AuthUser = {
   id: string;
@@ -13,6 +23,12 @@ export type AuthUser = {
   email: string;
   avatarUrl?: string;
   coverUrl?: string;
+  creatorStatus?: CreatorStatus;
+  isCreator?: boolean;
+  creatorAppliedAt?: string;
+  creatorApprovedAt?: string;
+  creatorApplication?: CreatorApplication;
+  nameUpdatedAt?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -22,16 +38,27 @@ export type AuthResponse = {
   user: AuthUser;
 };
 
-const AUTH_USER_KEY = "biishare_auth_user";
-const LEGACY_AUTH_TOKEN_KEY = "biishare_auth_token";
-export const AUTH_SESSION_CHANGED_EVENT = "biishare_auth_session_changed";
+const AUTH_USER_KEY = 'biishare_auth_user';
+const LEGACY_AUTH_TOKEN_KEY = 'biishare_auth_token';
+export const AUTH_SESSION_CHANGED_EVENT = 'biishare_auth_session_changed';
+
+let cachedAuthUser: AuthUser | null = null;
 
 function notifyAuthSessionChanged() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return;
   }
 
   window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT));
+}
+
+function clearStoredAuthSession() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
 }
 
 export function getApiErrorMessage(error: unknown, fallback: string) {
@@ -43,53 +70,40 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 }
 
 export function saveAuthSession(data: AuthResponse) {
-  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
-  localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+  cachedAuthUser = data.user;
+  clearStoredAuthSession();
   notifyAuthSessionChanged();
 }
 
 export function saveAuthUser(user: AuthUser) {
-  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-  localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+  cachedAuthUser = user;
+  clearStoredAuthSession();
   notifyAuthSessionChanged();
 }
 
 export function getAuthSession() {
-  const storedUser = localStorage.getItem(AUTH_USER_KEY);
-
-  if (!storedUser) {
-    return null;
-  }
-
-  try {
-    return {
-      user: JSON.parse(storedUser) as AuthUser,
-    };
-  } catch {
-    localStorage.removeItem(AUTH_USER_KEY);
-    return null;
-  }
+  return cachedAuthUser ? { user: cachedAuthUser } : null;
 }
 
 export function clearAuthSession() {
-  localStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
-  localStorage.removeItem(AUTH_USER_KEY);
+  cachedAuthUser = null;
+  clearStoredAuthSession();
   notifyAuthSessionChanged();
 }
 
 export async function loginUser(values: LoginFormValues) {
-  const response = await api.post<AuthResponse>("/auth/login", values);
+  const response = await api.post<AuthResponse>('/auth/login', values);
   return response.data;
 }
 
 export async function registerUser(values: RegisterFormValues) {
-  const response = await api.post<AuthResponse>("/auth/register", values);
+  const response = await api.post<AuthResponse>('/auth/register', values);
   return response.data;
 }
 
 export async function checkUsernameAvailability(username: string) {
   const response = await api.get<{ username: string; available: boolean }>(
-    "/auth/username",
+    '/auth/username',
     {
       params: { username },
     }
@@ -99,15 +113,45 @@ export async function checkUsernameAvailability(username: string) {
 }
 
 export async function getCurrentUser() {
-  const response = await api.get<{ user: AuthUser }>("/auth/me");
+  const response = await api.get<{ user: AuthUser }>('/auth/me');
 
   return response.data.user;
 }
 
 export async function logoutUser() {
-  await api.post<{ message: string }>("/auth/logout");
+  await api.post<{ message: string }>('/auth/logout');
 }
 
+export type CreatorApplicationValues = {
+  publicName: string;
+  workDescription: string;
+  verificationCode: string;
+  verificationPhoto: File;
+  consentAccepted: boolean;
+};
+
+export async function applyCreatorApplication(values?: CreatorApplicationValues) {
+  if (!values) {
+    const response = await api.post<
+      AuthResponse & { creatorStatus: CreatorStatus }
+    >('/auth/creator-application');
+
+    return response.data;
+  }
+
+  const formData = new FormData();
+  formData.append('publicName', values.publicName);
+  formData.append('workDescription', values.workDescription);
+  formData.append('verificationCode', values.verificationCode);
+  formData.append('verificationPhoto', values.verificationPhoto);
+  formData.append('consentAccepted', String(values.consentAccepted));
+
+  const response = await api.post<
+    AuthResponse & { creatorStatus: CreatorStatus }
+  >('/auth/creator-application', formData);
+
+  return response.data;
+}
 export async function uploadProfileImages({
   avatar,
   cover,
@@ -118,19 +162,19 @@ export async function uploadProfileImages({
   const formData = new FormData();
 
   if (avatar) {
-    formData.append("avatar", avatar);
+    formData.append('avatar', avatar);
   }
 
   if (cover) {
-    formData.append("cover", cover);
+    formData.append('cover', cover);
   }
 
   const response = await api.post<{ message: string; user: AuthUser }>(
-    "/auth/profile-images",
+    '/auth/profile-images',
     formData,
     {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     }
   );

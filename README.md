@@ -106,6 +106,14 @@ lib/               Configuracoes compartilhadas
 public/            Assets publicos da aplicacao
 ```
 
+## Sessao em producao
+
+A sessao real usa cookie HTTP-only emitido pela API. O menu valida /auth/me antes de mostrar o perfil e nao usa localStorage como fonte de verdade.
+
+Para o perfil renderizado no servidor funcionar, o cookie precisa chegar ao dominio do frontend. O recomendado e publicar frontend e API no mesmo site, por exemplo app.example.com e api.example.com, e configurar a API com AUTH_COOKIE_DOMAIN=.example.com.
+
+Se frontend e API ficarem em sites diferentes, sera necessario AUTH_COOKIE_SAME_SITE=none e AUTH_COOKIE_SECURE=true, mas essa arquitetura e mais fragil porque depende de cookies de terceiros em navegadores modernos.
+
 ## Deploy
 
 Para producao, configure `NEXT_PUBLIC_API_BASE_URL` na plataforma de deploy, como Vercel, Netlify ou outro provedor compativel com Next.js.

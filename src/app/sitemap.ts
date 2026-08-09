@@ -7,8 +7,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-  const postsRes = await getPosts({ limit: 1000 })
-  const toquesRes = await getShorts({ limit: 1000 })
+  const [postsRes, toquesRes] = await Promise.all([
+    getPosts({ limit: 1000 }).catch(() => ({ data: [] })),
+    getShorts({ limit: 1000 }).catch(() => ({ data: [] })),
+  ])
 
   const posts = postsRes.data || []
   const toques = toquesRes.data || []

@@ -40,6 +40,7 @@ interface SavePostButtonProps {
   title?: string
   initialSaved?: boolean
   sx?: SxProps<Theme>
+  iconSize?: number
 }
 
 type FeedbackState = {
@@ -94,6 +95,7 @@ export default function SavePostButton({
   title,
   initialSaved,
   sx,
+  iconSize = 22,
 }: SavePostButtonProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -290,8 +292,8 @@ export default function SavePostButton({
             sx={[
               {
                 position: 'relative',
-                width: 38,
-                height: 38,
+                width: 42,
+                height: 42,
                 bgcolor: 'rgba(255,255,255,0.96)',
                 color: '#334155',
                 border: '1px solid rgba(226,232,240,0.95)',
@@ -317,7 +319,7 @@ export default function SavePostButton({
               ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
             ]}
           >
-            <MoreVertical size={19} />
+            <MoreVertical size={iconSize} strokeWidth={2.4} />
           </IconButton>
         </span>
       </Tooltip>
@@ -351,7 +353,7 @@ export default function SavePostButton({
           onClick={handleToggleSaved}
           disabled={isBusy}
           sx={{
-            minHeight: 44,
+            minHeight: 48,
             gap: 1,
             color: isSaved ? '#ea580c' : '#111827',
             '&.Mui-disabled': {
@@ -391,7 +393,7 @@ export default function SavePostButton({
         <MenuItem
           onClick={handleShare}
           sx={{
-            minHeight: 44,
+            minHeight: 48,
             gap: 1,
           }}
         >

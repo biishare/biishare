@@ -7,6 +7,10 @@ import { LEVEL_LABEL_MAP, SUBJECT_LABEL_MAP } from "../../../constants/maps";
 import { usePostFilters } from "../../../utils/Post/FetchPosts";
 import { FiltersSkeleton } from "../Skeleton/Filters.Skeleton";
 import { useFeedChrome } from "../../../hooks/useFeedChrome";
+import { getContentTypeLabel } from "../../../utils/labels";
+import type { PostContentType } from "../../../types/post";
+
+const DEFAULT_CONTENT_TYPES: PostContentType[] = ["video", "document", "image", "playlist"];
 
 export default function ContentFilters() {
   const router = useRouter();
@@ -57,10 +61,9 @@ export default function ContentFilters() {
   if (loading) return <FiltersSkeleton stickyTop={stickyTop} stuck={isStuck} />;
   if (error || !filters) return <Box mt={4}>Erro ao carregar filtros</Box>;
 
-  // obter valor atual
+  const contentTypes = Array.from(new Set([...DEFAULT_CONTENT_TYPES, ...filters.contentTypes]));
   const getFilterValue = (key: string) => searchParams.get(key) || "";
 
-  // atualizar query
   const updateQuery = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     value ? params.set(key, value) : params.delete(key);
@@ -80,7 +83,6 @@ export default function ContentFilters() {
 
   const popoverOpen = Boolean(anchorEl);
 
-  // 🔥 ESTILO PADRÃO DOS CHIPS
   const getChipStyle = (active: boolean) => ({
     minWidth: 120,
     fontWeight: 600,
@@ -143,19 +145,17 @@ export default function ContentFilters() {
         py: 1,
       }}
     >
-      {/* NÍVEL */}
       <Chip
         label={
           getFilterValue("level")
             ? LEVEL_LABEL_MAP[getFilterValue("level")]
-            : "Todos os níveis"
+            : "Todos os niveis"
         }
         onClick={(e) => openPopover(e, "level")}
         clickable
         sx={getChipStyle(!!getFilterValue("level"))}
       />
 
-      {/* DISCIPLINA */}
       <Chip
         label={
           getFilterValue("subjectId")
@@ -167,13 +167,10 @@ export default function ContentFilters() {
         sx={getChipStyle(!!getFilterValue("subjectId"))}
       />
 
-      {/* TIPO */}
       <Chip
         label={
-          getFilterValue("contentType") === "video"
-            ? "Vídeos"
-            : getFilterValue("contentType") === "document"
-            ? "Documentos"
+          getFilterValue("contentType")
+            ? getContentTypeLabel(getFilterValue("contentType") as PostContentType)
             : "Todos os tipos"
         }
         onClick={(e) => openPopover(e, "contentType")}
@@ -181,7 +178,6 @@ export default function ContentFilters() {
         sx={getChipStyle(!!getFilterValue("contentType"))}
       />
 
-      {/* POPOVER */}
       <Popover
         open={popoverOpen}
         anchorEl={anchorEl}
@@ -197,7 +193,6 @@ export default function ContentFilters() {
             gap: 1,
           }}
         >
-          {/* LEVEL */}
           {popoverType === "level" &&
             ["", ...filters.levels].map((level) => (
               <Button
@@ -215,11 +210,10 @@ export default function ContentFilters() {
               >
                 {level
                   ? LEVEL_LABEL_MAP[level]
-                  : "Todos os níveis"}
+                  : "Todos os niveis"}
               </Button>
             ))}
 
-          {/* SUBJECT */}
           {popoverType === "subjectId" &&
             ["", ...filters.subjects].map((sub) => (
               <Button
@@ -241,9 +235,8 @@ export default function ContentFilters() {
               </Button>
             ))}
 
-          {/* TYPE */}
           {popoverType === "contentType" &&
-            ["", "video", "document"].map((type) => (
+            ["", ...contentTypes].map((type) => (
               <Button
                 key={type || "all"}
                 variant={
@@ -257,11 +250,7 @@ export default function ContentFilters() {
                   closePopover();
                 }}
               >
-                {type === "video"
-                  ? "Vídeos"
-                  : type === "document"
-                  ? "Documentos"
-                  : "Todos os tipos"}
+                {type ? getContentTypeLabel(type as PostContentType) : "Todos os tipos"}
               </Button>
             ))}
         </Box>

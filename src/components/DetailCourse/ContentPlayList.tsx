@@ -1,19 +1,15 @@
 import { useEffect, useRef } from "react";
-import { PlayCircle, FileText } from "lucide-react";
+import { FileText, Image as ImageIcon, PlayCircle } from "lucide-react";
 
-interface PlaylistItem {
-  title: string;
-  url: string;
-}
+import type { MediaItem, PostContentType } from "../../../types/post";
 
 interface ContentPlaylistProps {
-  items: PlaylistItem[];
+  items: MediaItem[];
   activeIndex: number;
   onSelect: (index: number) => void;
-  type: "video" | "document";
+  type: PostContentType;
   maxHeight?: number;
 }
-
 
 export function ContentPlaylist({
   items,
@@ -24,7 +20,6 @@ export function ContentPlaylist({
 }: ContentPlaylistProps) {
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
 
-  // 🔹 manter item ativo visível
   useEffect(() => {
     const el = itemRefs.current[activeIndex];
     if (el) {
@@ -43,6 +38,7 @@ export function ContentPlaylist({
       <ul className="divide-y divide-orange-200">
         {items.map((item, index) => {
           const isActive = index === activeIndex;
+          const itemKind = getItemKind(type, item);
 
           return (
             <li
@@ -61,7 +57,6 @@ export function ContentPlaylist({
                 }
               `}
             >
-              {/* 🔸 Barra lateral ativa */}
               <span
                 className={`
                   absolute left-0 top-0 h-full w-1
@@ -74,12 +69,9 @@ export function ContentPlaylist({
                 `}
               />
 
-              {/* Ícone */}
-               {type === "video" ? (
-                <PlayCircle className="text-amber-600 w-5 h-5 shrink-0" />
-              ) : (
-                <FileText className="text-amber-600 w-5 h-5 shrink-0" />
-              )}
+              {itemKind === "video" && <PlayCircle className="text-amber-600 w-5 h-5 shrink-0" />}
+              {itemKind === "document" && <FileText className="text-amber-600 w-5 h-5 shrink-0" />}
+              {itemKind === "image" && <ImageIcon className="text-amber-600 w-5 h-5 shrink-0" />}
 
               <span
                 title={item.title}
@@ -97,4 +89,16 @@ export function ContentPlaylist({
       </ul>
     </div>
   );
+}
+
+function getItemKind(type: PostContentType, item: MediaItem) {
+  if (type === "playlist") {
+    return item.kind === "document" ? "document" : "video";
+  }
+
+  if (type === "document" || type === "image") {
+    return type;
+  }
+
+  return "video";
 }

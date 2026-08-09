@@ -12,7 +12,7 @@ import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import theme from '../../../theme'
-import { PostDTO } from '../../../types/post'
+import { PostContentType, PostDTO } from '../../../types/post'
 import { getPosts } from '../../../services/post.service'
 import ContentCardSkeleton from '../Skeleton/Course.Skeleton'
 import { buildFeed } from '../../../utils/buildFeed'
@@ -29,10 +29,7 @@ export default function ContentList() {
   const subjectId = searchParams.get('subjectId') || undefined
   const level = searchParams.get('level') || undefined
   const searchQuery = searchParams.get('q')?.trim() || undefined
-  const contentType = searchParams.get('contentType') as
-    | 'video'
-    | 'document'
-    | undefined
+  const contentType = parseContentType(searchParams.get('contentType'))
   const pageLimit = searchQuery ? 1000 : LIMIT
 
   const {
@@ -202,6 +199,14 @@ export default function ContentList() {
       </Box>
     </ThemeProvider>
   )
+}
+
+function parseContentType(value: string | null): PostContentType | undefined {
+  if (value === 'video' || value === 'document' || value === 'image' || value === 'playlist') {
+    return value
+  }
+
+  return undefined
 }
 
 function postMatchesSearch(post: PostDTO, normalizedQuery: string) {

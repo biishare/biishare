@@ -1,4 +1,3 @@
-
 export type ToqueArea =
   | 'biologia'
   | 'matematica'
@@ -19,6 +18,7 @@ type ToqueImage = {
 
 export type Toque = {
   _id: string
+  creatorId?: string
   area: ToqueArea
   title: string
   description: string
@@ -26,6 +26,7 @@ export type Toque = {
   createdAt: string
   updatedAt: string
 } & (ToqueVideo | ToqueImage)
+
 export type SavedToqueDTO = {
   id: string
   savedAt: string
@@ -39,3 +40,14 @@ export type SavedToquesResponse = {
   total?: number
   totalPages?: number
 }
+
+export type CreateToquePayload = {
+  area: ToqueArea
+  title: string
+  description: string
+  mediaType: 'video'
+  videoUrl: string
+  isPublished?: boolean
+}
+
+export type UpdateToquePayload = Partial<CreateToquePayload>

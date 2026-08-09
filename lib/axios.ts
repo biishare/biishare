@@ -1,10 +1,11 @@
-import axios from "axios";
-import { resolveBrowserApiBaseUrl } from "./api-base-url";
+import axios from 'axios';
+import { resolveBrowserApiBaseUrl } from './api-base-url';
 
 export const api = axios.create({
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
+    'X-Biishare-Client': 'web',
   },
 });
 

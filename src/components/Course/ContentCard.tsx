@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Box, Typography } from '@mui/material'
-import { FileText, PlayCircle } from 'lucide-react'
+import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { FileText, Image as ImageIcon, ListVideo, PlayCircle } from 'lucide-react'
 
-import { PostDTO } from '../../../types/post'
+import { PostContentType, PostDTO } from '../../../types/post'
 import { getSubjectLabels, getLevelLabel } from '../../../utils/labels'
 import { getCloudinaryBlur } from '../../../utils/Post/CloudinaryBlur'
 import SavePostButton from '../Post/SavePostButton'
@@ -14,9 +14,14 @@ interface Props {
   post: PostDTO
 }
 
+const LEGACY_CREATOR_NAME = 'Saber Academico'
+
 export default function ContentCard({ post }: Props) {
-  const isVideo = post.contentType === 'video'
   const contentHref = `/content/${post._id}`
+  const creatorName = getPostCreatorName(post)
+  const creatorAvatar = post.creator?.avatarUrl
+  const badge = getContentBadge(post.contentType)
+  const previewImage = getPostPreviewImage(post)
 
   return (
     <Box
@@ -35,7 +40,7 @@ export default function ContentCard({ post }: Props) {
         },
 
         '&:hover .content-card-title': {
-          color: '#c2410c',
+          color: '#0f172a',
         },
 
         '&:hover .content-card-image': {
@@ -43,14 +48,7 @@ export default function ContentCard({ post }: Props) {
         },
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.1,
-          minWidth: 0,
-        }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.05, minWidth: 0 }}>
         <Link
           href={contentHref}
           scroll={false}
@@ -73,13 +71,11 @@ export default function ContentCard({ post }: Props) {
           >
             <Image
               className="content-card-image"
-              src={post.imageLink || '/placeholder.jpg'}
+              src={previewImage}
               alt={post.title}
               fill
-              placeholder={post.imageLink ? 'blur' : 'empty'}
-              blurDataURL={
-                post.imageLink ? getCloudinaryBlur(post.imageLink) : undefined
-              }
+              placeholder={previewImage.startsWith('http') ? 'blur' : 'empty'}
+              blurDataURL={previewImage.startsWith('http') ? getCloudinaryBlur(previewImage) : undefined}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               style={{
                 objectFit: 'cover',
@@ -96,18 +92,18 @@ export default function ContentCard({ post }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.45,
-                px: 0.8,
-                py: 0.35,
-                bgcolor: 'rgba(0,0,0,0.78)',
+                px: 0.85,
+                py: 0.42,
+                bgcolor: 'rgba(0,0,0,0.82)',
                 color: '#fff',
                 fontSize: 11,
-                fontWeight: 700,
+                fontWeight: 800,
                 lineHeight: 1,
                 textTransform: 'uppercase',
               }}
             >
-              {isVideo ? <PlayCircle size={13} /> : <FileText size={13} />}
-              {isVideo ? 'Video' : 'Doc'}
+              {badge.icon}
+              {badge.label}
             </Box>
           </Box>
         </Link>
@@ -115,42 +111,46 @@ export default function ContentCard({ post }: Props) {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) auto',
-            gap: 0.8,
+            gridTemplateColumns: '40px minmax(0, 1fr) 42px',
+            gap: 1,
             alignItems: 'start',
             minWidth: 0,
-            pb: 0.5,
+            pb: 0.3,
           }}
         >
+          <Avatar
+            src={creatorAvatar}
+            alt={creatorName}
+            sx={{
+              width: 38,
+              height: 38,
+              bgcolor: '#111827',
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 900,
+            }}
+          >
+            {getInitials(creatorName)}
+          </Avatar>
+
           <Link
             href={contentHref}
             scroll={false}
-            style={{
-              color: 'inherit',
-              display: 'block',
-              minWidth: 0,
-              textDecoration: 'none',
-            }}
+            style={{ color: 'inherit', display: 'block', minWidth: 0, textDecoration: 'none' }}
             aria-label={`Abrir conteudo: ${post.title}`}
           >
-            <Box
-              display="flex"
-              flexDirection="column"
-              gap={0.45}
-              sx={{ minWidth: 0 }}
-            >
+            <Stack gap={0.25} sx={{ minWidth: 0 }}>
               <Typography
                 className="content-card-title"
-                variant="subtitle1"
                 sx={{
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                   minHeight: 44,
-                  color: '#111827',
-                  fontSize: 15,
-                  fontWeight: 700,
+                  color: '#0f172a',
+                  fontSize: 16,
+                  fontWeight: 850,
                   lineHeight: '22px',
                   textOverflow: 'ellipsis',
                   transition: 'color 0.18s ease',
@@ -160,7 +160,20 @@ export default function ContentCard({ post }: Props) {
               </Typography>
 
               <Typography
-                variant="body2"
+                sx={{
+                  color: '#64748b',
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  lineHeight: '18px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {creatorName}
+              </Typography>
+
+              <Typography
                 sx={{
                   color: '#64748b',
                   fontSize: 13,
@@ -170,25 +183,25 @@ export default function ContentCard({ post }: Props) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {getSubjectLabels(post.subjectIds, post.subjectId)} &bull;{' '}
-                {getLevelLabel(post.level)}
+                {getSubjectLabels(post.subjectIds, post.subjectId)} &bull; {getLevelLabel(post.level)} &bull; {formatPostDate(post.createdAt)}
               </Typography>
-            </Box>
+            </Stack>
           </Link>
 
           <SavePostButton
             postId={post._id}
             title={post.title}
+            iconSize={23}
             sx={{
-              width: 34,
-              height: 34,
-              mt: -0.4,
+              width: 42,
+              height: 42,
+              mt: -0.45,
               flexShrink: 0,
               bgcolor: 'transparent',
               borderColor: 'transparent',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#f1f5f9',
+                bgcolor: '#e2e8f0',
               },
             }}
           />
@@ -196,4 +209,59 @@ export default function ContentCard({ post }: Props) {
       </Box>
     </Box>
   )
+}
+
+function getPostCreatorName(post: PostDTO) {
+  return post.creator?.name || LEGACY_CREATOR_NAME
+}
+
+function getPostPreviewImage(post: PostDTO) {
+  if (post.imageLink) {
+    return post.imageLink
+  }
+
+  if (post.contentType === 'image') {
+    return post.images?.[0]?.url || '/placeholder.jpg'
+  }
+
+  return '/placeholder.jpg'
+}
+
+function getContentBadge(type: PostContentType) {
+  if (type === 'document') {
+    return { label: 'Doc', icon: <FileText size={14} /> }
+  }
+
+  if (type === 'image') {
+    return { label: 'Imagem', icon: <ImageIcon size={14} /> }
+  }
+
+  if (type === 'playlist') {
+    return { label: 'Playlist', icon: <ListVideo size={14} /> }
+  }
+
+  return { label: 'Video', icon: <PlayCircle size={14} /> }
+}
+
+function getInitials(value: string) {
+  return value
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+}
+
+function formatPostDate(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Publicado recentemente'
+  }
+
+  return `Publicado em ${new Intl.DateTimeFormat('pt-PT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)}`
 }

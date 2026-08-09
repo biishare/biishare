@@ -11,6 +11,10 @@ import {
 
 import { usePostFilters } from "../../../utils/Post/FetchPosts"
 import { FiltersSkeleton } from "../Skeleton/Filters.Skeleton"
+import { getContentTypeLabel } from "../../../utils/labels"
+import type { PostContentType } from "../../../types/post"
+
+const DEFAULT_CONTENT_TYPES: PostContentType[] = ["video", "document", "image", "playlist"]
 
 export default function ContentFiltersClient() {
   const router = useRouter()
@@ -24,6 +28,7 @@ export default function ContentFiltersClient() {
   if (loading) return <FiltersSkeleton />
   if (error || !filters) return <Box mt={4}>Erro ao carregar filtros</Box>
 
+  const contentTypes = Array.from(new Set([...DEFAULT_CONTENT_TYPES, ...filters.contentTypes]))
   const get = (key: string) => searchParams.get(key) || ""
 
   const updateQuery = (key: string, value: string) => {
@@ -66,18 +71,16 @@ export default function ContentFiltersClient() {
         py: 1,
       }}
     >
-      {/* LEVEL */}
       <Chip
         label={
           get("level")
             ? LEVEL_LABEL_MAP[get("level")]
-            : "Todos os níveis"
+            : "Todos os niveis"
         }
         onClick={(e) => openPopover(e, "level")}
         color={get("level") ? "warning" : "default"}
       />
 
-      {/* SUBJECT */}
       <Chip
         label={
           get("subjectId")
@@ -88,20 +91,16 @@ export default function ContentFiltersClient() {
         color={get("subjectId") ? "warning" : "default"}
       />
 
-      {/* TYPE */}
       <Chip
         label={
-          get("contentType") === "video"
-            ? "Vídeos"
-            : get("contentType") === "document"
-            ? "Documentos"
+          get("contentType")
+            ? getContentTypeLabel(get("contentType") as PostContentType)
             : "Todos os tipos"
         }
         onClick={(e) => openPopover(e, "contentType")}
         color={get("contentType") ? "warning" : "default"}
       />
 
-      {/* POPUP */}
       <Popover
         open={open}
         anchorEl={anchorEl}
@@ -136,7 +135,7 @@ export default function ContentFiltersClient() {
             ))}
 
           {popoverType === "contentType" &&
-            ["", "video", "document"].map((t) => (
+            ["", ...contentTypes].map((t) => (
               <Button
                 key={t || "all"}
                 onClick={() => {
@@ -144,7 +143,7 @@ export default function ContentFiltersClient() {
                   closePopover()
                 }}
               >
-                {t || "Todos"}
+                {t ? getContentTypeLabel(t as PostContentType) : "Todos"}
               </Button>
             ))}
         </Box>

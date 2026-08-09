@@ -11,41 +11,40 @@ import {
 } from "@mui/material";
 import { Maximize2 } from "lucide-react";
 
-import { PostDTO } from "../../../types/post";
+import { MediaItem, PostDTO, PostContentType } from "../../../types/post";
 import { ContentPlaylist } from "./ContentPlayList";
 import { FullscreenPdfViewer } from "../Modal/PdfImageViewer";
 import { PdfImageViewer } from "../Document/PdfImageViewer";
 import VideoPlay from "../VideoPlay/VideoPlay";
 import RelatedContent from "./RelatedContent";
-import { getLevelLabel, getSubjectLabels } from "../../../utils/labels";
+import { getContentTypeLabel, getLevelLabel, getSubjectLabels } from "../../../utils/labels";
 import SavePostButton from "../Post/SavePostButton";
 
 interface DetailContentProps {
   post: PostDTO;
 }
 
+type RenderKind = "video" | "document" | "image";
+
 export default function DetailContent({ post }: DetailContentProps) {
   const contentType = post.contentType;
-
-  const list =
-    contentType === "video"
-      ? post.videos ?? []
-      : post.documents ?? [];
+  const list = getPostContentItems(post);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [openFullscreen, setOpenFullscreen] = useState(false);
   const [expanded, setExpanded] = useState(false)
 
-  const activeItem = list[activeIndex];
+  const activeItem = list[activeIndex] ?? list[0];
+  const activeKind = activeItem ? getRenderKind(contentType, activeItem) : "video";
 
   const subjectLabel = getSubjectLabels(post.subjectIds, post.subjectId);
 
   if (!activeItem) {
-    return <Typography>Nenhum conteÃºdo disponÃ­vel</Typography>;
+    return <Typography>Nenhum conteudo disponivel</Typography>;
   }
 
   const totalPages =
-    contentType === "document" && "totalPages" in activeItem
+    activeKind === "document"
       ? activeItem.totalPages ?? 1
       : undefined;
 
@@ -65,7 +64,6 @@ export default function DetailContent({ post }: DetailContentProps) {
           gap: 3,
         }}
       >
-        {/* ðŸŽ¥ HERO */}
         <Box>
           <Paper
             sx={{
@@ -74,7 +72,7 @@ export default function DetailContent({ post }: DetailContentProps) {
               background: "#000",
             }}
           >
-            {contentType === "video" ? (
+            {activeKind === "video" && (
               <Box sx={{ aspectRatio: "16 / 9" }}>
                 <VideoPlay
                   url={activeItem.url}
@@ -83,7 +81,24 @@ export default function DetailContent({ post }: DetailContentProps) {
                   markVideoAsCompleted={() => { }}
                 />
               </Box>
-            ) : (
+            )}
+
+            {activeKind === "image" && (
+              <Box
+                component="img"
+                src={activeItem.url}
+                alt={activeItem.title || post.title}
+                sx={{
+                  width: "100%",
+                  aspectRatio: "16 / 9",
+                  display: "block",
+                  objectFit: "contain",
+                  bgcolor: "#000",
+                }}
+              />
+            )}
+
+            {activeKind === "document" && (
               <Box sx={{ position: "relative" }}>
                 <PdfImageViewer
                   url={activeItem.url}
@@ -91,7 +106,6 @@ export default function DetailContent({ post }: DetailContentProps) {
                   maxPages={totalPages}
                 />
 
-                {/* botÃ£o flutuante */}
                 <Button
                   size="small"
                   variant="contained"
@@ -114,7 +128,6 @@ export default function DetailContent({ post }: DetailContentProps) {
             )}
           </Paper>
 
-          {/* ðŸ“„ INFO */}
           <Box mt={2}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
@@ -131,9 +144,10 @@ export default function DetailContent({ post }: DetailContentProps) {
             <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
               <Chip label={subjectLabel} size="small" />
               <Chip label={getLevelLabel(post.level)} size="small" />
+              <Chip label={getContentTypeLabel(contentType)} size="small" />
 
-              {contentType === "document" && totalPages && (
-                <Chip label={`${totalPages} pÃ¡ginas`} size="small" />
+              {activeKind === "document" && totalPages && (
+                <Chip label={`${totalPages} paginas`} size="small" />
               )}
             </Stack>
 
@@ -158,7 +172,6 @@ export default function DetailContent({ post }: DetailContentProps) {
           </Box>
         </Box>
 
-        {/* ðŸ“š PLAYLIST */}
         <Paper
           sx={{
             borderRadius: 3,
@@ -171,9 +184,7 @@ export default function DetailContent({ post }: DetailContentProps) {
           }}
         >
           <Typography fontWeight={700} mb={2}>
-            {contentType === "video"
-              ? "ConteÃºdos do vÃ­deo"
-              : "Documentos"}
+            {contentType === "playlist" ? "Playlist" : "Conteudos"}
           </Typography>
 
           <ContentPlaylist
@@ -187,8 +198,7 @@ export default function DetailContent({ post }: DetailContentProps) {
 
       <RelatedContent post={post} />
 
-      {/* FULLSCREEN */}
-      {contentType === "document" && (
+      {activeKind === "document" && (
         <FullscreenPdfViewer
           open={openFullscreen}
           onClose={() => setOpenFullscreen(false)}
@@ -200,3 +210,37 @@ export default function DetailContent({ post }: DetailContentProps) {
   );
 }
 
+function getPostContentItems(post: PostDTO): MediaItem[] {
+  if (post.contentType === "video") {
+    return (post.videos ?? []).map((item) => ({ ...item, kind: "video" }));
+  }
+
+  if (post.contentType === "document") {
+    return (post.documents ?? []).map((item) => ({ ...item, kind: "document" }));
+  }
+
+  if (post.contentType === "image") {
+    return (post.images ?? []).map((item) => ({ ...item, kind: "image" }));
+  }
+
+  return (post.playlist ?? []).map((item) => ({
+    ...item,
+    kind: item.kind === "document" ? "document" : "video",
+  }));
+}
+
+function getRenderKind(contentType: PostContentType, item: MediaItem): RenderKind {
+  if (contentType === "playlist") {
+    return item.kind === "document" ? "document" : "video";
+  }
+
+  if (contentType === "document") {
+    return "document";
+  }
+
+  if (contentType === "image") {
+    return "image";
+  }
+
+  return "video";
+}

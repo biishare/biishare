@@ -20,6 +20,7 @@ import {
 import {
   AUTH_SESSION_CHANGED_EVENT,
   AuthUser,
+  clearAuthSession,
   getAuthSession,
   getCurrentUser,
   saveAuthUser,
@@ -113,7 +114,7 @@ function DesktopNavigation() {
   const pathname = usePathname()
   const { authUser, profileHref } = useNavigationUser()
   const authHref = authUser ? profileHref : '/login'
-  const authLabel = authUser ? getNavigationUserLabel(authUser) : 'Iniciar sessao'
+  const authLabel = authUser ? 'Eu' : 'Iniciar sessao'
   const authActive = authUser
     ? pathname.startsWith('/profile')
     : pathname.startsWith('/login')
@@ -294,7 +295,7 @@ function MobileNavigation() {
   const { authUser, profileHref } = useNavigationUser()
   const [menuOpen, setMenuOpen] = useState(false)
   const authHref = authUser ? profileHref : '/login'
-  const authLabel = authUser ? getNavigationUserLabel(authUser) : 'Iniciar sessao'
+  const authLabel = authUser ? 'Eu' : 'Iniciar sessao'
   const authActive = authUser
     ? pathname.startsWith('/profile')
     : pathname.startsWith('/login')
@@ -452,13 +453,13 @@ function useNavigationUser() {
 
     let isMounted = true
 
-    const syncAuthUser = () => {
+    const syncCachedAuthUser = () => {
+      if (!isMounted) return
+
       setAuthUser(getAuthSession()?.user ?? null)
     }
 
-    syncAuthUser()
-
-    if (!getAuthSession()) {
+    const refreshAuthUser = () => {
       getCurrentUser()
         .then((user) => {
           if (!isMounted) {
@@ -468,34 +469,34 @@ function useNavigationUser() {
           saveAuthUser(user)
           setAuthUser(user)
         })
-        .catch(() => undefined)
+        .catch(() => {
+          if (!isMounted) {
+            return
+          }
+
+          clearAuthSession()
+          setAuthUser(null)
+        })
     }
 
-    window.addEventListener(AUTH_SESSION_CHANGED_EVENT, syncAuthUser)
-    window.addEventListener('storage', syncAuthUser)
+    refreshAuthUser()
+
+    window.addEventListener(AUTH_SESSION_CHANGED_EVENT, syncCachedAuthUser)
+    window.addEventListener('focus', refreshAuthUser)
 
     return () => {
       isMounted = false
-      window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, syncAuthUser)
-      window.removeEventListener('storage', syncAuthUser)
+      window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, syncCachedAuthUser)
+      window.removeEventListener('focus', refreshAuthUser)
     }
   }, [])
 
   return {
     authUser,
     profileHref: authUser?.username
-      ? `/profile/${authUser.username}`
+      ? '/profile/' + authUser.username
       : '/profile',
   }
-}
-
-
-function getNavigationUserLabel(user: AuthUser) {
-  if (user.username) {
-    return `@${user.username}`
-  }
-
-  return user.name.trim().split(/\s+/)[0] || 'Perfil'
 }
 
 function NavigationItem({

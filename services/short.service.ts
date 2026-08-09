@@ -1,5 +1,5 @@
 import { api } from '../lib/axios'
-import { SavedToquesResponse, Toque } from '../types/Toque'
+import { CreateToquePayload, SavedToquesResponse, Toque, UpdateToquePayload } from '../types/Toque'
 
 export type GetShortsParams = {
   area?: string
@@ -27,6 +27,36 @@ export async function getShorts(params?: GetShortsParams) {
   }
 }
 
+
+export async function getMyToques(params?: Pick<GetShortsParams, 'page' | 'limit'>) {
+  const cleanParams = Object.fromEntries(
+    Object.entries(params || {}).filter(([_, v]) => v !== undefined)
+  )
+
+  const response = await api.get('/toques/mine', { params: cleanParams })
+
+  return response.data as {
+    data: Toque[]
+    page: number
+    total: number
+    totalPages?: number
+  }
+}
+
+export async function createToque(payload: CreateToquePayload) {
+  const response = await api.post<{ message: string; data: Toque }>('/toques', payload)
+  return response.data
+}
+
+export async function updateToque(id: string, payload: UpdateToquePayload) {
+  const response = await api.put<{ message: string; data: Toque }>(`/toques/${id}`, payload)
+  return response.data
+}
+
+export async function deleteToque(id: string) {
+  const response = await api.delete<{ message: string; data: Toque }>(`/toques/${id}`)
+  return response.data
+}
 export async function getToqueById(id: string): Promise<Toque> {
   const response = await api.get(`/toques/${id}`)
   return response.data
