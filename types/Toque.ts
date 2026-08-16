@@ -41,13 +41,28 @@ export type SavedToquesResponse = {
   totalPages?: number
 }
 
-export type CreateToquePayload = {
+type ToquePayloadBase = {
   area: ToqueArea
   title: string
   description: string
-  mediaType: 'video'
-  videoUrl: string
   isPublished?: boolean
 }
 
-export type UpdateToquePayload = Partial<CreateToquePayload>
+export type CreateToquePayload = ToquePayloadBase & (
+  | {
+      mediaType: 'video'
+      videoUrl: string
+      imageUrl?: never
+    }
+  | {
+      mediaType: 'image'
+      imageUrl: string
+      videoUrl?: never
+    }
+)
+
+export type UpdateToquePayload = Partial<ToquePayloadBase> & {
+  mediaType?: 'video' | 'image'
+  videoUrl?: string
+  imageUrl?: string
+}

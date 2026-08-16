@@ -26,6 +26,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
 import {
   ChevronDown,
@@ -99,9 +100,10 @@ type ToqueFormState = {
   title: string
   description: string
   isPublished: boolean
-  mediaType: 'video'
+  mediaType: '' | 'video' | 'image'
   videoUrl: string
   imageUrl: string
+  images: MediaItem[]
 }
 
 type EditingState =
@@ -138,9 +140,10 @@ const getEmptyToqueForm = (): ToqueFormState => ({
   title: '',
   description: '',
   isPublished: true,
-  mediaType: 'video',
+  mediaType: '',
   videoUrl: '',
   imageUrl: '',
+  images: [],
 })
 
 export default function CreatorPublications({ authUser }: { authUser: AuthUser }) {
@@ -157,6 +160,7 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const isCreator = authUser.isCreator || authUser.creatorStatus === 'approved'
+  const isCompactComposer = useMediaQuery('(max-width: 640px)')
 
   const postsQuery = useQuery({
     queryKey: ['creator-posts', authUser.id],
@@ -198,8 +202,17 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
   })
 
   const createToqueMutation = useMutation({
-    mutationFn: createToque,
-    onSuccess: () => handleMutationSuccess('Toque publicado.', 'toque'),
+    mutationFn: async (payload: CreateToquePayload | CreateToquePayload[]) => {
+      if (Array.isArray(payload)) {
+        return Promise.all(payload.map((item) => createToque(item)))
+      }
+
+      return createToque(payload)
+    },
+    onSuccess: (result) => {
+      const count = Array.isArray(result) ? result.length : 1
+      handleMutationSuccess(count > 1 ? count + ' Toques publicados.' : 'Toque publicado.', 'toque')
+    },
     onError: () => setFeedback({ type: 'error', message: 'Nao foi possivel publicar o toque.' }),
   })
 
@@ -309,10 +322,14 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
   }
 
   const handleSubmitToque = () => {
+    const imageItems = cleanImageItems(toqueForm.images)
+    const mediaType = toqueForm.mediaType || (toqueForm.videoUrl ? 'video' : imageItems.length ? 'image' : '')
     const formForSubmit = {
       ...toqueForm,
       title: toqueForm.title.trim() || getAutoToqueTitle(toqueForm),
-      mediaType: 'video' as const,
+      mediaType,
+      imageUrl: toqueForm.imageUrl || imageItems[0]?.url || '',
+      images: imageItems,
     }
     const parsed = toquePublicationSchema.safeParse(formForSubmit)
 
@@ -323,23 +340,45 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
 
     setToqueErrors({})
 
-    const payload: CreateToquePayload = {
+    const basePayload = {
       area: parsed.data.area as CreateToquePayload['area'],
       title: parsed.data.title,
       description: parsed.data.description,
-      mediaType: 'video',
-      videoUrl: parsed.data.videoUrl ?? '',
       isPublished: parsed.data.isPublished,
     }
 
-    if (editing?.kind === 'toque') {
-      updateToqueMutation.mutate({ id: editing.item._id, payload })
+    if (parsed.data.mediaType === 'video') {
+      const payload: CreateToquePayload = {
+        ...basePayload,
+        mediaType: 'video',
+        videoUrl: parsed.data.videoUrl ?? '',
+      }
+
+      if (editing?.kind === 'toque') {
+        updateToqueMutation.mutate({ id: editing.item._id, payload })
+        return
+      }
+
+      createToqueMutation.mutate(payload)
       return
     }
 
-    createToqueMutation.mutate(payload)
-  }
+    const imagePayloads = (parsed.data.images?.length
+      ? parsed.data.images
+      : [{ kind: 'image' as const, title: parsed.data.title, url: parsed.data.imageUrl ?? '' }]
+    ).map((item) => ({
+      ...basePayload,
+      mediaType: 'image' as const,
+      imageUrl: item.url,
+    }))
 
+    if (editing?.kind === 'toque') {
+      updateToqueMutation.mutate({ id: editing.item._id, payload: imagePayloads[0] })
+      return
+    }
+
+    createToqueMutation.mutate(imagePayloads.length === 1 ? imagePayloads[0] : imagePayloads)
+  }
   const handleEdit = (publication: Publication) => {
     setEditing(publication)
     setFeedback(null)
@@ -467,9 +506,24 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
         </Box>
       </Paper>
 
-      <Dialog open={choiceOpen} onClose={() => setChoiceOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle sx={{ fontWeight: 950 }}>Adicionar publicacao</DialogTitle>
-        <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2 } }}>
+      <Dialog
+        open={choiceOpen}
+        onClose={() => setChoiceOpen(false)}
+        fullWidth
+        fullScreen={isCompactComposer}
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            borderRadius: { xs: 0, sm: 3 },
+            m: { xs: 0, sm: 2 },
+            height: { xs: '100dvh', sm: 'auto' },
+            maxHeight: { xs: '100dvh', sm: 'calc(100% - 64px)' },
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 950, px: { xs: 1.6, sm: 3 }, py: { xs: 1.4, sm: 2 } }}>Criar</DialogTitle>
+        <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2 }, overflowY: 'auto' }}>
           <Box
             sx={{
               display: 'grid',
@@ -478,29 +532,42 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
             }}
           >
             <CreationOptionCard
-              icon={<PlayCircle size={28} />}
+              icon={<Stack direction="row" alignItems="center" gap={0.4}><PlayCircle size={25} /><ImageIcon size={24} /></Stack>}
               title="Toque"
-              description="Video curto"
               onClick={() => openComposer('toque')}
             />
             <CreationOptionCard
               icon={<FileText size={28} />}
               title="Post individual"
-              description="Video, documento ou imagens"
               onClick={() => openComposer('post')}
             />
             <CreationOptionCard
               icon={<ListVideo size={28} />}
               title="Playlist"
-              description="Videos e documentos"
               onClick={() => openComposer('playlist')}
             />
           </Box>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={composerOpen} onClose={handleCloseComposer} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 950, py: 1.35, px: 2 }}>
+      <Dialog
+        open={composerOpen}
+        onClose={handleCloseComposer}
+        fullWidth
+        fullScreen={isCompactComposer}
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: { xs: 0, sm: 3 },
+            m: { xs: 0, sm: 2 },
+            width: { xs: '100vw', sm: '100%' },
+            height: { xs: '100dvh', sm: 'auto' },
+            maxHeight: { xs: '100dvh', sm: 'calc(100% - 64px)' },
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 950, py: { xs: 1.2, sm: 1.35 }, px: { xs: 1.4, sm: 2 }, bgcolor: '#fff' }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
             <Typography fontWeight={950} fontSize={18} lineHeight={1.2}>
               {getComposerTitle(mode, editing)}
@@ -511,7 +578,7 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
           </Stack>
         </DialogTitle>
         <Divider />
-        <DialogContent sx={{ p: 0 }}>
+        <DialogContent sx={{ p: 0, overflowY: 'auto', bgcolor: '#fff' }}>
           {feedback && (
             <Alert severity={feedback.type} onClose={() => setFeedback(null)} sx={{ mb: 1.5, borderRadius: 2 }}>
               {feedback.message}
@@ -601,7 +668,7 @@ function CreateLauncher({ authUser, onOpen }: { authUser: AuthUser; onOpen: () =
             },
           }}
         >
-          Adicionar publicacao
+          Criar
         </Button>
       </Stack>
     </Paper>
@@ -609,12 +676,10 @@ function CreateLauncher({ authUser, onOpen }: { authUser: AuthUser; onOpen: () =
 }
 
 function CreationOptionCard({
-  description,
   icon,
   onClick,
   title,
 }: {
-  description: string
   icon: ReactNode
   onClick: () => void
   title: string
@@ -627,14 +692,14 @@ function CreationOptionCard({
       onClick={onClick}
       sx={{
         width: '100%',
-        minHeight: 150,
+        minHeight: { xs: 116, sm: 142 },
         border: '1px solid #e2e8f0',
         borderRadius: 2,
         bgcolor: '#fff',
         color: '#0f172a',
         cursor: 'pointer',
         textAlign: 'left',
-        p: 1.6,
+        p: { xs: 1.35, sm: 1.6 },
         transition: 'border-color .18s ease, background-color .18s ease, transform .18s ease',
         '&:hover': {
           bgcolor: '#f8fafc',
@@ -643,7 +708,7 @@ function CreationOptionCard({
         },
       }}
     >
-      <Stack gap={1.2}>
+      <Stack height="100%" justifyContent="space-between" gap={1.2}>
         <Box
           sx={{
             width: 46,
@@ -657,14 +722,9 @@ function CreationOptionCard({
         >
           {icon}
         </Box>
-        <Box>
-          <Typography fontWeight={950} fontSize={17}>
-            {title}
-          </Typography>
-          <Typography color="text.secondary" fontSize={13.5} mt={0.35}>
-            {description}
-          </Typography>
-        </Box>
+        <Typography fontWeight={950} fontSize={17}>
+          {title}
+        </Typography>
       </Stack>
     </Paper>
   )
@@ -815,8 +875,8 @@ function PostComposer({
 
   return (
     <>
-      <Stack gap={0}>
-        <Box sx={{ px: { xs: 1.6, sm: 2 }, pt: 1.7, pb: 1.35 }}>
+      <Stack gap={0} minHeight={{ xs: '100%', sm: 'auto' }}>
+        <Box sx={{ px: { xs: 1.6, sm: 2 }, pt: 1.7, pb: 1.35, flex: 1 }}>
           <ComposerIdentityBar
             authUser={authUser}
             isPublished={form.isPublished}
@@ -891,7 +951,7 @@ function PostComposer({
 
         <Divider />
 
-        <ComposerAddBar label="Adicionar a publicacao">
+        <ComposerAddBar>
           {variant === 'post' ? (
             <>
               <InlineFileButton
@@ -939,7 +999,17 @@ function PostComposer({
           )}
         </ComposerAddBar>
 
-        <Box sx={{ px: { xs: 1.6, sm: 2 }, py: 1.5 }}>
+        <Box
+          sx={{
+            px: { xs: 1.6, sm: 2 },
+            py: 1.5,
+            bgcolor: '#fff',
+            borderTop: { xs: '1px solid #eef2f7', sm: 'none' },
+            position: { xs: 'sticky', sm: 'static' },
+            bottom: 0,
+            pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 },
+          }}
+        >
           <Button
             fullWidth
             variant="contained"
@@ -993,7 +1063,7 @@ function ToqueComposer({
     if (!file) return
 
     if (detectLocalFileKind(file) !== 'video') {
-      setUploadError('Toques aceitam apenas videos.')
+      setUploadError('Escolhe um video.')
       return
     }
 
@@ -1004,13 +1074,15 @@ function ToqueComposer({
       const uploaded = await uploadPublicationMedia(file)
 
       if (uploaded.type !== 'video') {
-        setUploadError('Toques aceitam apenas videos.')
+        setUploadError('Escolhe um video.')
         return
       }
 
       update({
         mediaType: 'video',
         videoUrl: uploaded.url,
+        imageUrl: uploaded.thumbnailUrl || '',
+        images: [],
         title: form.title || uploaded.title,
       })
     } catch (error) {
@@ -1020,10 +1092,68 @@ function ToqueComposer({
     }
   }
 
+  const handleImageFiles = async (files: File[]) => {
+    if (files.length === 0) return
+
+    if (files.some((file) => detectLocalFileKind(file) !== 'image')) {
+      setUploadError('Escolhe apenas fotos.')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      const uploaded = []
+
+      for (const file of files) {
+        const item = await uploadPublicationMedia(file)
+
+        if (item.type !== 'image') {
+          setUploadError('Escolhe apenas fotos.')
+          return
+        }
+
+        uploaded.push(uploadToMediaItem(item))
+      }
+
+      const currentImages = form.mediaType === 'image'
+        ? form.images.filter((item) => item.url)
+        : []
+      const nextImages = [...currentImages, ...uploaded]
+
+      update({
+        mediaType: 'image',
+        videoUrl: '',
+        imageUrl: nextImages[0]?.url || '',
+        images: nextImages,
+        title: form.title || nextImages[0]?.title || '',
+      })
+    } catch (error) {
+      setUploadError('Nao foi possivel carregar as fotos.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const removeVideo = () => {
+    update({ mediaType: form.images.length ? 'image' : '', videoUrl: '', imageUrl: form.images[0]?.url || '' })
+  }
+
+  const removeImage = (index: number) => {
+    const nextImages = form.images.filter((_item, itemIndex) => itemIndex !== index)
+
+    update({
+      mediaType: nextImages.length ? 'image' : form.videoUrl ? 'video' : '',
+      imageUrl: nextImages[0]?.url || '',
+      images: nextImages,
+    })
+  }
+
   return (
     <>
-      <Stack gap={0}>
-        <Box sx={{ px: { xs: 1.6, sm: 2 }, pt: 1.7, pb: 1.35 }}>
+      <Stack gap={0} minHeight={{ xs: '100%', sm: 'auto' }}>
+        <Box sx={{ px: { xs: 1.6, sm: 2 }, pt: 1.7, pb: 1.35, flex: 1 }}>
           <ComposerIdentityBar
             authUser={authUser}
             isPublished={form.isPublished}
@@ -1041,7 +1171,7 @@ function ToqueComposer({
               error={Boolean(errors.description)}
               helperText={errors.description}
               multiline
-              minRows={3}
+              minRows={4}
               InputProps={{ disableUnderline: true }}
               sx={{ '& textarea': { fontSize: 16, lineHeight: 1.45 } }}
             />
@@ -1053,21 +1183,20 @@ function ToqueComposer({
             onClick={() => setClassifyOpen(true)}
           />
 
-          {form.videoUrl && (
-            <SingleVideoPreview
-              title={form.title || 'Video carregado'}
-              onRemove={() => update({ videoUrl: '' })}
-            />
-          )}
+          <ToqueMediaPreview
+            form={form}
+            onRemoveImage={removeImage}
+            onRemoveVideo={removeVideo}
+          />
 
-          <ErrorText value={uploadError || errors.videoUrl} />
+          <ErrorText value={uploadError || errors.videoUrl || errors.imageUrl || errors.images || errors.mediaType} />
 
-          {isUploading && <UploadStatus label="A carregar video..." />}
+          {isUploading && <UploadStatus label="A carregar..." />}
         </Box>
 
         <Divider />
 
-        <ComposerAddBar label="Adicionar ao Toque">
+        <ComposerAddBar>
           <InlineFileButton
             accept="video/*"
             disabled={isSaving || isUploading}
@@ -1075,15 +1204,33 @@ function ToqueComposer({
             label="Adicionar video"
             onFiles={handleVideoFile}
           />
+          <InlineFileButton
+            accept="image/*"
+            disabled={isSaving || isUploading}
+            icon={<ImageIcon size={20} />}
+            label="Adicionar fotos"
+            multiple
+            onFiles={handleImageFiles}
+          />
         </ComposerAddBar>
 
-        <Box sx={{ px: { xs: 1.6, sm: 2 }, py: 1.5 }}>
+        <Box
+          sx={{
+            px: { xs: 1.6, sm: 2 },
+            py: 1.5,
+            bgcolor: '#fff',
+            borderTop: { xs: '1px solid #eef2f7', sm: 'none' },
+            position: { xs: 'sticky', sm: 'static' },
+            bottom: 0,
+            pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 },
+          }}
+        >
           <Button
             fullWidth
             variant="contained"
             onClick={onSubmit}
             disabled={isSaving || isUploading}
-            sx={{ minHeight: 42, bgcolor: '#2563eb', textTransform: 'none', fontWeight: 950, '&:hover': { bgcolor: '#1d4ed8' } }}
+            sx={{ minHeight: 44, bgcolor: '#2563eb', textTransform: 'none', fontWeight: 950, '&:hover': { bgcolor: '#1d4ed8' } }}
           >
             {isSaving ? 'A guardar...' : isEditing ? 'Guardar' : 'Publicar'}
           </Button>
@@ -1270,18 +1417,20 @@ function ClassificationSummary({
   )
 }
 
-function ComposerAddBar({ children, label }: { children: ReactNode; label: string }) {
+function ComposerAddBar({ children, label }: { children: ReactNode; label?: string }) {
   return (
     <Stack
       direction="row"
       alignItems="center"
-      justifyContent="space-between"
+      justifyContent={label ? 'space-between' : 'flex-end'}
       gap={1}
-      sx={{ px: { xs: 1.6, sm: 2 }, py: 1.05 }}
+      sx={{ px: { xs: 1.6, sm: 2 }, py: 1.05, minHeight: 58 }}
     >
-      <Typography fontSize={13.5} fontWeight={950} color="#0f172a">
-        {label}
-      </Typography>
+      {label && (
+        <Typography fontSize={13.5} fontWeight={950} color="#0f172a">
+          {label}
+        </Typography>
+      )}
       <Stack direction="row" alignItems="center" gap={0.4}>
         {children}
       </Stack>
@@ -1511,6 +1660,99 @@ function MediaPreviewTile({
   )
 }
 
+function ToqueMediaPreview({
+  form,
+  onRemoveImage,
+  onRemoveVideo,
+}: {
+  form: ToqueFormState
+  onRemoveImage: (index: number) => void
+  onRemoveVideo: () => void
+}) {
+  const images = form.images.filter((item) => item.url)
+
+  if (!form.videoUrl && images.length === 0) return null
+
+  if (form.mediaType === 'video' && form.videoUrl) {
+    return <SingleVideoPreview title={form.title || 'Video carregado'} onRemove={onRemoveVideo} />
+  }
+
+  const visibleImages = images.slice(0, 4)
+  const hiddenCount = images.length - visibleImages.length
+
+  return (
+    <Box sx={{ mt: 1.15 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'repeat(3, minmax(0, 1fr))',
+            sm: 'repeat(4, minmax(0, 1fr))',
+          },
+          gap: 0.8,
+        }}
+      >
+        {visibleImages.map((item, index) => (
+          <Paper
+            key={`${item.url}-${index}`}
+            elevation={0}
+            sx={{
+              position: 'relative',
+              aspectRatio: '9 / 16',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+              borderRadius: 1.4,
+              bgcolor: '#0f172a',
+            }}
+          >
+            <Box
+              component="img"
+              src={item.url}
+              alt={item.title || 'Foto carregada'}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+            <IconButton
+              aria-label="Remover foto"
+              onClick={() => onRemoveImage(index)}
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: 5,
+                right: 5,
+                width: 26,
+                height: 26,
+                bgcolor: 'rgba(15,23,42,0.82)',
+                color: '#fff',
+                '&:hover': { bgcolor: '#0f172a' },
+              }}
+            >
+              <X size={14} />
+            </IconButton>
+          </Paper>
+        ))}
+
+        {hiddenCount > 0 && (
+          <Paper
+            elevation={0}
+            sx={{
+              aspectRatio: '9 / 16',
+              display: 'grid',
+              placeItems: 'center',
+              border: '1px dashed #cbd5e1',
+              borderRadius: 1.4,
+              bgcolor: '#f8fafc',
+              color: '#475569',
+              fontWeight: 950,
+            }}
+          >
+            +{hiddenCount}
+          </Paper>
+        )}
+      </Box>
+    </Box>
+  )
+}
+
 function SingleVideoPreview({ onRemove, title }: { onRemove: () => void; title: string }) {
   return (
     <Box sx={{ mt: 1.15 }}>
@@ -1519,8 +1761,8 @@ function SingleVideoPreview({ onRemove, title }: { onRemove: () => void; title: 
           elevation={0}
           sx={{
             position: 'relative',
-            width: 118,
-            aspectRatio: '16 / 9',
+            width: 92,
+            aspectRatio: '9 / 16',
             flexShrink: 0,
             overflow: 'hidden',
             border: '1px solid #e2e8f0',
@@ -2494,12 +2736,12 @@ function toqueToForm(toque: Toque): ToqueFormState {
     title: toque.title,
     description: toque.description,
     isPublished: toque.isPublished !== false,
-    mediaType: 'video',
+    mediaType: toque.mediaType,
     videoUrl: toque.mediaType === 'video' ? toque.videoUrl : '',
-    imageUrl: '',
+    imageUrl: toque.mediaType === 'image' ? toque.imageUrl : '',
+    images: toque.mediaType === 'image' ? [{ kind: 'image', title: toque.title, url: toque.imageUrl }] : [],
   }
 }
-
 function toFieldErrors(errors: Record<string, string[] | undefined>): FieldErrors {
   return Object.fromEntries(
     Object.entries(errors).map(([key, value]) => [key, value?.[0] ?? ''])

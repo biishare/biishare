@@ -6,14 +6,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Avatar, Box, Drawer, Tooltip, Typography } from '@mui/material'
 import {
+  CircleUserRound,
   FileText,
   HelpCircle,
   Home,
   Info,
-  LogIn,
   MoreHorizontal,
   Shield,
-  UserCircle,
+  UserRoundCheck,
   Zap,
 } from 'lucide-react'
 
@@ -256,9 +256,9 @@ function DesktopNavigation() {
                   }}
                 />
               ) : authUser ? (
-                <UserCircle size={24} strokeWidth={2.1} />
+                <UserRoundCheck size={24} strokeWidth={2.1} />
               ) : (
-                <LogIn size={23} strokeWidth={2.1} />
+                <CircleUserRound size={23} strokeWidth={2.1} />
               )
             }
           />
@@ -345,9 +345,9 @@ function MobileNavigation() {
                   sx={{ width: 24, height: 24 }}
                 />
               ) : authUser ? (
-                <UserCircle size={23} strokeWidth={2.1} />
+                <UserRoundCheck size={23} strokeWidth={2.1} />
               ) : (
-                <LogIn size={22} strokeWidth={2.1} />
+                <CircleUserRound size={22} strokeWidth={2.1} />
               )
             }
           />

@@ -192,6 +192,27 @@ export const ToquesCard = memo(function ToquesCard({
     setMuted(globalMuted)
   }
 
+  const handleTitleClick = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    if (pageToque) {
+      event.stopPropagation()
+    }
+  }
+
+  const handleDescriptionClick = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    event.stopPropagation()
+
+    if (!pageToque) {
+      event.preventDefault()
+      return
+    }
+
+    setExpanded((value) => !value)
+  }
+
   const handleMouseEnter = async () => {
     if (pageToque || isTouchDevice() || !isVideo) return
 
@@ -534,10 +555,7 @@ export const ToquesCard = memo(function ToquesCard({
           fontWeight={800}
           fontSize={pageToque ? 17 : 15}
           lineHeight={1.25}
-          onClick={(event) => {
-            event.stopPropagation()
-            setExpanded(v => !v)
-          }}
+          onClick={handleTitleClick}
           sx={{
             display: '-webkit-box',
             WebkitLineClamp: expanded ? 'unset' : 1,
@@ -552,10 +570,7 @@ export const ToquesCard = memo(function ToquesCard({
           fontSize={pageToque ? 14 : 13}
           lineHeight={1.35}
           mt={0.5}
-          onClick={(event) => {
-            event.stopPropagation()
-            setExpanded(v => !v)
-          }}
+          onClick={handleDescriptionClick}
           sx={{
             opacity: 0.9,
             display: '-webkit-box',
