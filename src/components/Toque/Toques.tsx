@@ -74,6 +74,18 @@ function getShareUrl(id: string) {
   return `${window.location.origin}/toque/${id}`
 }
 
+function getToqueImageUrls(item: Toque) {
+  if (item.mediaType !== 'image') return []
+
+  const urls = [
+    ...(item.images ?? []).map((image) => image.url),
+    ...(item.imageUrls ?? []),
+    item.imageUrl,
+  ].filter((url): url is string => Boolean(url))
+
+  return Array.from(new Set(urls))
+}
+
 interface Props {
   item: Toque
   pageToque?: boolean
@@ -100,6 +112,8 @@ export const ToquesCard = memo(function ToquesCard({
   const [shareDone, setShareDone] = useState(false)
 
   const isVideo = item.mediaType === 'video'
+  const imageUrls = isVideo ? [] : getToqueImageUrls(item)
+  const imageCount = imageUrls.length
   const videoPreload =
     preload ?? (active ? 'auto' : pageToque ? 'metadata' : 'metadata')
 
@@ -349,6 +363,15 @@ export const ToquesCard = memo(function ToquesCard({
             top: 10,
             left: 10,
             zIndex: 5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.55,
+            px: !isVideo && imageCount > 1 ? 0.75 : 0,
+            py: !isVideo && imageCount > 1 ? 0.3 : 0,
+            borderRadius: 999,
+            color: '#fff',
+            bgcolor: !isVideo && imageCount > 1 ? 'rgba(15,23,42,0.72)' : 'transparent',
+            backdropFilter: !isVideo && imageCount > 1 ? 'blur(10px)' : 'none',
           }}
         >
           {isVideo ? (
@@ -356,6 +379,36 @@ export const ToquesCard = memo(function ToquesCard({
           ) : (
             <ImageIcon size={16} color="white" />
           )}
+          {!isVideo && imageCount > 1 && (
+            <Typography sx={{ fontSize: 11, fontWeight: 900, lineHeight: 1 }}>
+              {imageCount}
+            </Typography>
+          )}
+        </Box>
+      )}
+
+      {pageToque && !isVideo && imageCount > 1 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 14,
+            left: 14,
+            zIndex: 6,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.55,
+            px: 0.95,
+            py: 0.45,
+            borderRadius: 999,
+            color: '#fff',
+            bgcolor: 'rgba(15,23,42,0.72)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <ImageIcon size={15} color="white" />
+          <Typography sx={{ fontSize: 12, fontWeight: 900, lineHeight: 1 }}>
+            {imageCount}
+          </Typography>
         </Box>
       )}
 
@@ -409,18 +462,10 @@ export const ToquesCard = memo(function ToquesCard({
             }}
           />
         ) : (
-          <Image
-            src={item.imageUrl}
-            alt={item.title}
-            fill
-            placeholder="blur"
-            blurDataURL={placeholder.blurDataURL}
-            sizes={pageToque
-              ? '(max-width: 600px) 100vw, 520px'
-              : '(max-width: 600px) 50vw, 240px'}
-            style={{
-              objectFit: pageToque ? 'contain' : 'cover',
-            }}
+          <ToqueImageGallery
+            imageUrls={imageUrls}
+            title={item.title}
+            pageToque={pageToque}
           />
         )}
 
@@ -608,3 +653,60 @@ export const ToquesCard = memo(function ToquesCard({
     </Paper>
   )
 })
+
+function ToqueImageGallery({
+  imageUrls,
+  title,
+  pageToque,
+}: {
+  imageUrls: string[]
+  title: string
+  pageToque: boolean
+}) {
+  const urls = imageUrls.length ? imageUrls : ['/opengraph-image.jpg']
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        display: 'grid',
+        gridAutoFlow: 'column',
+        gridAutoColumns: '100%',
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        scrollSnapType: 'x mandatory',
+        overscrollBehaviorX: 'contain',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
+      {urls.map((url, index) => (
+        <Box
+          key={`${url}-${index}`}
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+          }}
+        >
+          <Image
+            src={url}
+            alt={index === 0 ? title : `${title} ${index + 1}`}
+            fill
+            placeholder="blur"
+            blurDataURL={placeholder.blurDataURL}
+            sizes={pageToque
+              ? '(max-width: 600px) 100vw, 520px'
+              : '(max-width: 600px) 50vw, 240px'}
+            style={{
+              objectFit: pageToque ? 'contain' : 'cover',
+            }}
+          />
+        </Box>
+      ))}
+    </Box>
+  )
+}

@@ -8,6 +8,7 @@ const subjectIds = SUBJECTS.map((subject) => subject.id) as [string, ...string[]
 const levelIds = LEVELS.map((level) => level.id) as [string, ...string[]]
 const toqueAreaIds = CURIOSITY_AREAS.map((area) => area.id) as [string, ...string[]]
 const postContentTypes = ['video', 'document', 'image', 'playlist'] as const
+const toqueMediaTypes = ['video', 'image'] as const
 
 const emptyToUndefined = (value: unknown) => (value === '' ? undefined : value)
 
@@ -130,20 +131,36 @@ export const toquePublicationSchema = z
     area: z.preprocess(emptyToUndefined, z.enum(toqueAreaIds)),
     title: z.string().trim().min(3, 'Titulo muito curto').max(80, 'Maximo 80 caracteres'),
     description: z.string().trim().min(20, 'Descricao muito curta').max(600, 'Maximo 600 caracteres'),
-    mediaType: z.preprocess(emptyToUndefined, z.literal('video')),
+    mediaType: z.preprocess(emptyToUndefined, z.enum(toqueMediaTypes)),
     videoUrl: z.preprocess(emptyToUndefined, z.string().trim().url('Link do video invalido').optional()),
     imageUrl: z.preprocess(emptyToUndefined, z.string().trim().url('Link da imagem invalido').optional()),
+    images: z.array(imageItemSchema).optional(),
     isPublished: z.boolean().default(true),
   })
   .superRefine((data, ctx) => {
-    data.imageUrl = undefined
+    if (data.mediaType === 'video') {
+      data.imageUrl = undefined
+      data.images = undefined
 
-    if (!data.videoUrl) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['videoUrl'],
-        message: 'O link do video e obrigatorio',
-      })
+      if (!data.videoUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['videoUrl'],
+          message: 'Adiciona um video',
+        })
+      }
+    }
+
+    if (data.mediaType === 'image') {
+      data.videoUrl = undefined
+
+      if ((!data.images || data.images.length === 0) && !data.imageUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['images'],
+          message: 'Adiciona pelo menos uma foto',
+        })
+      }
     }
   })
 

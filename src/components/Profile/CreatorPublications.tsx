@@ -202,17 +202,8 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
   })
 
   const createToqueMutation = useMutation({
-    mutationFn: async (payload: CreateToquePayload | CreateToquePayload[]) => {
-      if (Array.isArray(payload)) {
-        return Promise.all(payload.map((item) => createToque(item)))
-      }
-
-      return createToque(payload)
-    },
-    onSuccess: (result) => {
-      const count = Array.isArray(result) ? result.length : 1
-      handleMutationSuccess(count > 1 ? count + ' Toques publicados.' : 'Toque publicado.', 'toque')
-    },
+    mutationFn: createToque,
+    onSuccess: () => handleMutationSuccess('Toque publicado.', 'toque'),
     onError: () => setFeedback({ type: 'error', message: 'Nao foi possivel publicar o toque.' }),
   })
 
@@ -363,21 +354,25 @@ export default function CreatorPublications({ authUser }: { authUser: AuthUser }
       return
     }
 
-    const imagePayloads = (parsed.data.images?.length
+    const selectedImageItems = parsed.data.images?.length
       ? parsed.data.images
       : [{ kind: 'image' as const, title: parsed.data.title, url: parsed.data.imageUrl ?? '' }]
-    ).map((item) => ({
+    const imagePayloadItems = selectedImageItems.map((item) => ({ url: item.url }))
+    const imageUrls = imagePayloadItems.map((item) => item.url)
+    const payload: CreateToquePayload = {
       ...basePayload,
-      mediaType: 'image' as const,
-      imageUrl: item.url,
-    }))
+      mediaType: 'image',
+      imageUrl: imageUrls[0] ?? '',
+      imageUrls,
+      images: imagePayloadItems,
+    }
 
     if (editing?.kind === 'toque') {
-      updateToqueMutation.mutate({ id: editing.item._id, payload: imagePayloads[0] })
+      updateToqueMutation.mutate({ id: editing.item._id, payload })
       return
     }
 
-    createToqueMutation.mutate(imagePayloads.length === 1 ? imagePayloads[0] : imagePayloads)
+    createToqueMutation.mutate(payload)
   }
   const handleEdit = (publication: Publication) => {
     setEditing(publication)
@@ -1677,22 +1672,53 @@ function ToqueMediaPreview({
     return <SingleVideoPreview title={form.title || 'Video carregado'} onRemove={onRemoveVideo} />
   }
 
-  const visibleImages = images.slice(0, 4)
-  const hiddenCount = images.length - visibleImages.length
-
   return (
-    <Box sx={{ mt: 1.15 }}>
+    <Box sx={{ mt: 1.15, position: 'relative' }}>
+      {images.length > 1 && (
+        <Stack
+          direction="row"
+          alignItems="center"
+          gap={0.45}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 3,
+            px: 0.9,
+            py: 0.35,
+            borderRadius: 999,
+            bgcolor: 'rgba(15,23,42,0.78)',
+            color: '#fff',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <ImageIcon size={13} />
+          <Typography sx={{ fontSize: 12, fontWeight: 900, lineHeight: 1 }}>
+            {images.length}
+          </Typography>
+        </Stack>
+      )}
+
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: {
-            xs: 'repeat(3, minmax(0, 1fr))',
-            sm: 'repeat(4, minmax(0, 1fr))',
-          },
+          gridAutoFlow: 'column',
+          gridAutoColumns: { xs: '38%', sm: '27%' },
           gap: 0.8,
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          pb: 0.45,
+          scrollSnapType: 'x mandatory',
+          overscrollBehaviorX: 'contain',
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': { height: 6 },
+          '&::-webkit-scrollbar-thumb': {
+            borderRadius: 999,
+            bgcolor: 'rgba(100,116,139,0.38)',
+          },
         }}
       >
-        {visibleImages.map((item, index) => (
+        {images.map((item, index) => (
           <Paper
             key={`${item.url}-${index}`}
             elevation={0}
@@ -1703,6 +1729,7 @@ function ToqueMediaPreview({
               border: '1px solid #e2e8f0',
               borderRadius: 1.4,
               bgcolor: '#0f172a',
+              scrollSnapAlign: 'start',
             }}
           >
             <Box
@@ -1730,24 +1757,6 @@ function ToqueMediaPreview({
             </IconButton>
           </Paper>
         ))}
-
-        {hiddenCount > 0 && (
-          <Paper
-            elevation={0}
-            sx={{
-              aspectRatio: '9 / 16',
-              display: 'grid',
-              placeItems: 'center',
-              border: '1px dashed #cbd5e1',
-              borderRadius: 1.4,
-              bgcolor: '#f8fafc',
-              color: '#475569',
-              fontWeight: 950,
-            }}
-          >
-            +{hiddenCount}
-          </Paper>
-        )}
       </Box>
     </Box>
   )
@@ -2404,19 +2413,45 @@ function PublicationMedia({ publication }: { publication: Publication }) {
   const toque = publication.item
 
   if (toque.mediaType === 'image') {
+    const imageUrls = getToqueImageUrls(toque)
+
     return (
-      <Box
-        component="img"
-        src={toque.imageUrl || '/opengraph-image.jpg'}
-        alt={toque.title}
-        sx={{
-          width: '100%',
-          aspectRatio: '16 / 9',
-          display: 'block',
-          objectFit: 'cover',
-          bgcolor: '#e2e8f0',
-        }}
-      />
+      <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', bgcolor: '#e2e8f0' }}>
+        <Box
+          component="img"
+          src={imageUrls[0] || '/opengraph-image.jpg'}
+          alt={toque.title}
+          sx={{
+            width: '100%',
+            height: '100%',
+            display: 'block',
+            objectFit: 'cover',
+          }}
+        />
+        {imageUrls.length > 1 && (
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={0.4}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              px: 0.8,
+              py: 0.35,
+              borderRadius: 999,
+              bgcolor: 'rgba(15,23,42,0.76)',
+              color: '#fff',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <ImageIcon size={13} />
+            <Typography sx={{ fontSize: 12, fontWeight: 900, lineHeight: 1 }}>
+              {imageUrls.length}
+            </Typography>
+          </Stack>
+        )}
+      </Box>
     )
   }
 
@@ -2730,7 +2765,29 @@ function postToForm(post: PostDTO): PostFormState {
   }
 }
 
+function getToqueImageUrls(toque: Toque) {
+  if (toque.mediaType !== 'image') return []
+
+  const urls = [
+    ...(toque.images ?? []).map((item) => item.url),
+    ...(toque.imageUrls ?? []),
+    toque.imageUrl,
+  ].filter((url): url is string => Boolean(url))
+
+  return Array.from(new Set(urls))
+}
+
+function getToqueImageItems(toque: Toque): MediaItem[] {
+  return getToqueImageUrls(toque).map((url, index) => ({
+    kind: 'image' as const,
+    title: index === 0 ? toque.title : `${toque.title} ${index + 1}`,
+    url,
+  }))
+}
+
 function toqueToForm(toque: Toque): ToqueFormState {
+  const images = toque.mediaType === 'image' ? getToqueImageItems(toque) : []
+
   return {
     area: toque.area,
     title: toque.title,
@@ -2738,8 +2795,8 @@ function toqueToForm(toque: Toque): ToqueFormState {
     isPublished: toque.isPublished !== false,
     mediaType: toque.mediaType,
     videoUrl: toque.mediaType === 'video' ? toque.videoUrl : '',
-    imageUrl: toque.mediaType === 'image' ? toque.imageUrl : '',
-    images: toque.mediaType === 'image' ? [{ kind: 'image', title: toque.title, url: toque.imageUrl }] : [],
+    imageUrl: images[0]?.url || '',
+    images,
   }
 }
 function toFieldErrors(errors: Record<string, string[] | undefined>): FieldErrors {

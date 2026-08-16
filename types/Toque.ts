@@ -4,15 +4,23 @@ export type ToqueArea =
   | 'fisica'
   | 'quimica'
 
+export type ToqueImageItem = {
+  url: string
+}
+
 type ToqueVideo = {
   mediaType: 'video'
   videoUrl: string
   imageUrl?: never
+  imageUrls?: never
+  images?: never
 }
 
 type ToqueImage = {
   mediaType: 'image'
   imageUrl: string
+  imageUrls?: string[]
+  images?: ToqueImageItem[]
   videoUrl?: never
 }
 
@@ -53,10 +61,14 @@ export type CreateToquePayload = ToquePayloadBase & (
       mediaType: 'video'
       videoUrl: string
       imageUrl?: never
+      imageUrls?: never
+      images?: never
     }
   | {
       mediaType: 'image'
       imageUrl: string
+      imageUrls?: string[]
+      images?: ToqueImageItem[]
       videoUrl?: never
     }
 )
@@ -65,4 +77,6 @@ export type UpdateToquePayload = Partial<ToquePayloadBase> & {
   mediaType?: 'video' | 'image'
   videoUrl?: string
   imageUrl?: string
+  imageUrls?: string[]
+  images?: ToqueImageItem[]
 }
